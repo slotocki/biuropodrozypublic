@@ -1,0 +1,70 @@
+﻿.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(26, 32, 44, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(66, 153, 225, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logoLink {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.logoLink:hover {
+    transform: scale(1.05);
+}
+
+.logo {
+    height: 40px;
+    width: auto;
+    background: transparent;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.appName {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #4299e1;
+}
+
+.userSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ⭐ ZMIENIONE - Usuń tło i ramkę */
+.userName {
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    /* Usunięto background, border i border-radius */
+}
+
+.logoutButton {
+    background-color: #4299e1;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.logoutButton:hover {
+    background-color: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+}

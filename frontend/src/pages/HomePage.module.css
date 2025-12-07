@@ -1,0 +1,187 @@
+﻿.dashboardContainer {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    padding: 2rem;
+}
+
+.heroSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto 4rem;
+    padding: 3rem;
+    background: rgba(45, 55, 72, 0.6);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.heroContent {
+    color: #edf2f7;
+}
+
+.mainTitle {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 0 0 1rem 0;
+    background: linear-gradient(135deg, #4299e1 0%, #667eea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: #cbd5e0;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.heroImage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.illustration {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.illustration:hover {
+    transform: scale(1.05);
+}
+
+.tileGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tile {
+    position: relative;
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    border: 2px solid #4a5568;
+    border-radius: 12px;
+    padding: 2rem;
+    text-decoration: none;
+    color: #edf2f7;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+    margin-left: 0.5rem;
+
+}
+
+.tile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4299e1, #667eea);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.tile:hover::before {
+    transform: scaleX(1);
+}
+
+.tile:hover {
+    transform: translateY(-8px);
+    border-color: #4299e1;
+    box-shadow: 0 10px 30px rgba(66, 153, 225, 0.3);
+}
+
+.tileIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.tileTitle {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 0 0.75rem 0;
+    color: #4299e1;
+}
+
+.tileDescription {
+    font-size: 1rem;
+    color: #cbd5e0;
+    line-height: 1.6;
+    margin: 0 0 1.5rem 0;
+}
+
+.tileArrow {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    font-size: 1.5rem;
+    color: #4299e1;
+    transition: transform 0.3s ease;
+}
+
+.tile:hover .tileArrow {
+    transform: translateX(8px);
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    .heroSection {
+        grid-template-columns: 1fr;
+        padding: 2rem;
+    }
+
+    .mainTitle {
+        font-size: 2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .tileGrid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+
+    /* Dodaj na końcu pliku HomePage.module.css */
+
+    .pageWrapper {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .dashboardHeader {
+        margin-bottom: 2rem;
+    }
+
+    .dashboardHeader h1 {
+        font-size: 2.5rem;
+        margin: 0;
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .pageWrapper {
+            padding: 1rem;
+        }
+
+        .dashboardHeader h1 {
+            font-size: 1.8rem;
+        }
+    }
+
+}

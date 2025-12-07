@@ -1,0 +1,169 @@
+﻿/* ===== MAŁE PRZYCISKI (btn-sm) ===== */
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+}
+
+.btn-sm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== STYLE DLA ROZWIJANYCH WIERSZY W TABELACH ===== */
+.data-table .expanded-row {
+    background-color: #1a202c;
+}
+
+.data-table .expanded-row td {
+    padding: 0;
+}
+
+/* ===== KONTENER KLIENTÓW W ROZWINIĘTYM WIERSZU ===== */
+.klienci-container {
+    padding: 1.5rem;
+    background-color: #1a202c;
+}
+
+.klienci-container h4 {
+    margin: 0 0 1rem 0;
+    color: #f7fafc;
+    font-size: 1.1rem;
+}
+
+/* ===== TABELA KLIENTÓW WEWNĄTRZ GRUPY ===== */
+.klienci-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.klienci-table thead {
+    background-color: #2d3748;
+}
+
+.klienci-table th,
+.klienci-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid #4a5568;
+    color: #e2e8f0;
+}
+
+.klienci-table th {
+    font-weight: 600;
+    color: #f7fafc;
+}
+
+.klienci-table tbody tr:hover {
+    background-color: #2d3748;
+}
+
+.klienci-table td:last-child {
+    text-align: center;
+}
+
+/* ===== PUSTY KOMUNIKAT ===== */
+.empty-message {
+    color: #a0aec0;
+    font-style: italic;
+    text-align: center;
+    padding: 1rem;
+    background-color: #2d3748;
+    border-radius: 4px;
+}
+
+/* ===== PRZYCISKI AKCJI W KOMÓRKACH TABELI ===== */
+.action-buttons-cell {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ===== CHECKBOXY W TABELACH ===== */
+.data-table input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #6366f1;
+}
+
+/* ===== WYŁĄCZONE PRZYCISKI ===== */
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ===== RESPONSYWNOŚĆ DLA MAŁYCH EKRANÓW ===== */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1rem;
+    }
+
+    .data-table {
+        font-size: 0.9rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 0.5rem;
+    }
+
+    .klienci-container {
+        padding: 1rem;
+    }
+
+    .klienci-table {
+        font-size: 0.85rem;
+    }
+
+    .klienci-table th,
+    .klienci-table td {
+        padding: 0.5rem;
+    }
+
+    .action-buttons-cell {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .btn-sm {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+/* ===== ANIMACJE ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.data-table tbody tr {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* ===== SCROLLBAR DLA TABELI (opcjonalnie) ===== */
+.data-table::-webkit-scrollbar {
+    height: 8px;
+}
+
+.data-table::-webkit-scrollbar-track {
+    background: #1a202c;
+}
+
+.data-table::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+
+.data-table::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}

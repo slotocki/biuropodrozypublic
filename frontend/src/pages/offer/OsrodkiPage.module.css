@@ -1,0 +1,154 @@
+﻿/* pages/offer/OsrodkiPage.module.css */
+.osrodkiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.osrodekCard {
+    background-color: #2d3748;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.osrodekCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.osrodekCard.selected {
+    border-color: #4299e1;
+    background-color: #3a4556;
+}
+
+.checkboxContainer {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 5;
+}
+
+.checkboxContainer input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #4299e1;
+}
+
+.zdjecieOsrodka {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.zdjecieOsrodka:hover {
+    opacity: 0.9;
+}
+
+.zdjeciePlaceholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.zdjeciePlaceholder:hover {
+    opacity: 0.9;
+}
+
+.osrodekInfo {
+    padding: 1.5rem;
+}
+
+.osrodekInfo h3 {
+    margin: 0 0 1rem 0;
+    color: #f7fafc;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.osrodekInfo h3:hover {
+    color: #4299e1;
+}
+
+.infoRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: #cbd5e0;
+    font-size: 0.9rem;
+}
+
+.opis {
+    color: #a0aec0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 1rem 0;
+}
+
+.adnotacje {
+    background-color: #2c5282;
+    color: #e2e8f0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin: 0.75rem 0;
+    border-left: 3px solid #4299e1;
+}
+
+.statsRow {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding-top: 1rem;
+    border-top: 1px solid #4a5568;
+}
+
+.statsRow span {
+    color: #cbd5e0;
+    font-size: 0.9rem;
+}
+
+.btnSzczegoly {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 1rem;
+}
+
+.btnSzczegoly:hover {
+    background-color: #3182ce;
+}
+
+.emptyState {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #a0aec0;
+    font-size: 1.1rem;
+    padding: 3rem;
+}
+
+@media (max-width: 768px) {
+    .osrodkiGrid {
+        grid-template-columns: 1fr;
+    }
+}

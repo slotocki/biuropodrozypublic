@@ -1,0 +1,94 @@
+﻿/* components/offer/modals/PromocjaModal.module.css */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 2rem;
+}
+
+.modal {
+    background-color: #2d3748;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #f7fafc;
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+    flex: 1;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #cbd5e0;
+    font-weight: 500;
+}
+
+.input,
+.textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    color: #e2e8f0;
+    border-radius: 6px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: #4299e1;
+}
+
+.textarea {
+    resize: vertical;
+}
+
+.formRow {
+    display: flex;
+    gap: 1rem;
+}
+
+.znizkaInfo {
+    background-color: #2c5282;
+    color: #e2e8f0;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    border-left: 4px solid #4299e1;
+}
+
+.buttonContainer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .formRow {
+        flex-direction: column;
+    }
+}

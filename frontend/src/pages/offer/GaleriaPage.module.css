@@ -1,0 +1,240 @@
+﻿/* pages/offer/GaleriaPage.module.css */
+
+.galeriaGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+.zdjecieCard {
+    position: relative;
+    background-color: #2d3748;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    height: 350px; /* ✅ DODANE - stała wysokość */
+}
+
+.zdjecieCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.checkboxContainer {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 10;
+}
+
+.checkboxContainer input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #4299e1;
+}
+
+.badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background-color: rgba(255, 215, 0, 0.95);
+    color: #1a202c;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+.badgeGlowne {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background-color: #f59e0b;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.zdjecieImage {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.zdjecieImg {
+    width: 100%;
+    height: 100%; /* ✅ ZMIENIONE - wypełnia całą wysokość karty */
+    object-fit: cover; /* ✅ WAŻNE - przycina zachowując proporcje */
+    display: block;
+}
+
+.zdjecieInfo {
+    padding: 1rem;
+}
+
+.opisZdjecia {
+    font-size: 0.95rem;
+    color: #e2e8f0;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.8rem;
+}
+
+.tagi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.tag {
+    background-color: #4299e1;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.przypisanie {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: #a0aec0;
+}
+
+.przypisanie span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.emptyState {
+    text-align: center;
+    color: #a0aec0;
+    font-size: 1.1rem;
+    padding: 3rem;
+}
+
+/* Lightbox - powiększone zdjęcie */
+.lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    cursor: pointer;
+    animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.lightboxContent {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: default;
+}
+
+.closeBtn {
+    position: absolute;
+    top: -50px;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2.5rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    transition: opacity 0.2s;
+    line-height: 1;
+}
+
+.closeBtn:hover {
+    opacity: 0.7;
+}
+
+.lightboxImage {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+}
+
+.lightboxCaption {
+    color: white;
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 1.1rem;
+    max-width: 600px;
+}
+
+/* Opis zdjęcia widoczny po hover */
+.zdjecieOpis {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    color: white;
+    padding: 1.5rem 1rem 1rem;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: 0 0 12px 12px;
+}
+
+.zdjecieCard:hover .zdjecieOpis {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .galeriaGrid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .zdjecieCard {
+        height: 300px;
+    }
+
+    .lightboxImage {
+        max-height: 70vh;
+    }
+
+    .closeBtn {
+        top: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}

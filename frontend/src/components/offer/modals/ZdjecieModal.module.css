@@ -1,0 +1,184 @@
+﻿/* components/offer/modals/ZdjecieModal.module.css */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 2rem;
+}
+
+.modal {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background-color: #2d3748;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.closeButton {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, opacity 0.2s;
+    opacity: 0.6;
+}
+
+.closeButton:hover {
+    background-color: rgba(255, 0, 0, 0.7);
+    opacity: 1;
+}
+
+.image {
+    width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    background-color: #1a202c;
+}
+
+.info {
+    padding: 1.5rem;
+    background-color: #2d3748;
+    position: relative;
+}
+
+.badge {
+    background-color: rgba(255, 215, 0, 0.95);
+    color: #1a202c;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.opis {
+    font-size: 1rem;
+    color: #e2e8f0;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.tagi {
+    margin-bottom: 1rem;
+}
+
+.tagi strong {
+    color: #cbd5e0;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.tagiList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    background-color: #4299e1;
+    color: white;
+    padding: 0.35rem 0.85rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.przypisanie {
+    color: #a0aec0;
+    font-size: 0.95rem;
+}
+
+.przypisanie p {
+    margin: 0.5rem 0;
+}
+
+.przypisanie strong {
+    color: #cbd5e0;
+}
+
+/* ✅ POPRAWIONE - przyciski nawigacji POD zdjęciem */
+.navButton {
+    position: absolute;
+    bottom: 1rem;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.2s;
+    opacity: 0.7;
+}
+
+.navButton:hover {
+    background-color: rgba(66, 153, 225, 0.9);
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.navButtonLeft {
+    left: 1rem;
+}
+
+.navButtonRight {
+    right: 1rem;
+}
+
+.counter {
+    text-align: center;
+    color: #a0aec0;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #4a5568;
+}
+
+/* ✅ DODANE - responsive dla mniejszych ekranów */
+@media (max-width: 768px) {
+    .navButton {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        bottom: 0.5rem;
+    }
+
+    .navButtonLeft {
+        left: 0.5rem;
+    }
+
+    .navButtonRight {
+        right: 0.5rem;
+    }
+
+    .closeButton {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+}

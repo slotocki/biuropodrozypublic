@@ -1,0 +1,265 @@
+﻿.page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 3rem;
+    min-height: 100vh;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    margin: 0;
+    /* ✅ ZMIANA: jasny szary */
+    color: #f7fafc;
+}
+
+.loading-text {
+    text-align: center;
+    /* ✅ ZMIANA */
+    color: #cbd5e0;
+    font-size: 1.2rem;
+    padding: 2rem;
+}
+
+.error-text {
+    text-align: center;
+    /* ✅ ZMIANA: czerwony pozostaje dla błędów */
+    color: #fc8181;
+    font-size: 1.2rem;
+    padding: 2rem;
+}
+
+/* ===== PRZYCISKI ===== */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    /* ✅ ZMIANA: szary zamiast niebieski */
+    background-color: #4a5568;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #718096;
+}
+
+.btn-secondary {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+}
+
+.btn-secondary:hover {
+    background-color: #4a5568;
+}
+
+.btn-danger {
+    background-color: #f56565;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #fc8181;
+}
+
+/* ===== TABELE ===== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #2d3748;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #4a5568;
+    color: #e2e8f0;
+}
+
+.data-table th {
+    background-color: #1a202c;
+    font-weight: 600;
+    /* ✅ ZMIANA */
+    color: #f7fafc;
+}
+
+.data-table tr:hover {
+    background-color: #4a5568;
+}
+
+/* ===== FORMULARZE ===== */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    /* ✅ ZMIANA */
+    color: #cbd5e0;
+    font-weight: 500;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    /* ✅ ZMIANA */
+    color: #e2e8f0;
+    border-radius: 6px;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    /* ✅ ZMIANA: szary focus */
+    border-color: #cbd5e0;
+}
+
+/* Dodaj na końcu pliku PageStyles.css */
+
+/* Header z wyszukiwaniem */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.search-input {
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 0.95rem;
+    width: 300px;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Przyciski akcji */
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    justify-content: flex-end;
+}
+
+/* Sortowanie w nagłówkach tabeli */
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 20px;
+    transition: color 0.2s ease;
+}
+
+.sortable-header:hover {
+    color: #6366f1;
+}
+
+.sortable-header::after {
+    content: '⇅';
+    position: absolute;
+    right: 5px;
+    opacity: 0.3;
+    font-size: 0.85em;
+}
+
+.sortable-header.sorted-asc::after {
+    content: '▲';
+    opacity: 1;
+    color: #6366f1;
+}
+
+.sortable-header.sorted-desc::after {
+    content: '▼';
+    opacity: 1;
+    color: #6366f1;
+}
+
+/* Zaznaczony wiersz */
+.selected-row {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+.selected-row:hover {
+    background-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+.search-input,
+select.search-input {
+    padding: 0.75rem;
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    color: #e2e8f0;
+    border-radius: 6px;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus,
+select.search-input:focus {
+    outline: none;
+    border-color: #4299e1;
+}
+
+/* Style dla options w selectach */
+select.search-input option {
+    background-color: #1a202c;
+    color: #e2e8f0;
+    padding: 0.5rem;
+}
+/* Responsywny input */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .action-buttons {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}
+

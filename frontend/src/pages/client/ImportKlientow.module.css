@@ -1,0 +1,258 @@
+﻿.fileInfo {
+    background-color: #2c5282;
+    border: 1px solid #4a5568;
+    padding: 1rem;
+    border-radius: 4px;
+    color: #edf2f7;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.largeModalContent {
+    background-color: #2d3748;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 95%;
+    max-width: 1000px;
+    max-height: 85vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.largeModalContent h2 {
+    margin-top: 0;
+    color: #edf2f7;
+}
+
+.tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #4a5568;
+}
+
+.tab {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    color: #a0aec0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+}
+
+.tab.active {
+    color: #edf2f7;
+    border-bottom-color: #4299e1;
+}
+
+.tab:hover {
+    color: #cbd5e0;
+}
+
+.table {
+    overflow-x: auto;
+    border: 1px solid #4a5568;
+    border-radius: 4px;
+    background-color: #1a202c;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: #2d3748;
+    padding: 0.75rem;
+    text-align: left;
+    color: #cbd5e0;
+    font-weight: 600;
+    border-bottom: 1px solid #4a5568;
+    font-size: 0.9rem;
+}
+
+td {
+    padding: 0.75rem;
+    color: #edf2f7;
+    border-bottom: 1px solid #4a5568;
+    font-size: 0.9rem;
+}
+
+tr:hover {
+    background-color: #2d3748;
+}
+
+.duplicatesList {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.duplicateGroup {
+    border: 1px solid #f6ad55;
+    background-color: #5a2812;
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+.duplicateGroup h4 {
+    margin: 0 0 1rem 0;
+    color: #fed7aa;
+    font-size: 0.95rem;
+}
+
+.duplicateItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem;
+    background-color: #6b3410;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.duplicateItem input[type="checkbox"] {
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.clientInfo {
+    color: #edf2f7;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .largeModalContent {
+        width: 98%;
+        max-height: 90vh;
+        padding: 1rem;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    table {
+        font-size: 0.85rem;
+    }
+
+    th,
+    td {
+        padding: 0.5rem;
+    }
+
+    .duplicatesList {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .duplicateGroup {
+        border: 2px solid #f6ad55;
+        background-color: #5a2812;
+        padding: 1.5rem;
+        border-radius: 6px;
+    }
+
+    .duplicateGroup h4 {
+        margin: 0 0 1.5rem 0;
+        color: #fed7aa;
+        font-size: 1rem;
+    }
+
+    .groupOptions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .groupOption {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        background-color: #6b3410;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .groupOption:hover {
+        background-color: #7d3f18;
+        border-color: #fed7aa;
+    }
+    .duplicateGroup {
+        border: 2px solid #f6ad55;
+        background-color: #5a2812;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    .groupOptions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-height: 180px;
+        overflow-y: auto;
+    }
+
+    .groupOption {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background-color: #6b3410;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .groupOptionContent {
+        font-size: 0.8rem;
+        line-height: 1.3;
+        color: #edf2f7;
+        flex: 1;
+        overflow: hidden;
+        word-break: break-word;
+    }
+
+    .groupOption.groupOptionSelected {
+        background-color: #30a05f;
+        border-color: #6ee7b7;
+    }
+
+    .groupOption input[type="radio"] {
+        margin-top: 0.3rem;
+        flex-shrink: 0;
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+    }
+
+    .groupOptionContent {
+        color: #edf2f7;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+}

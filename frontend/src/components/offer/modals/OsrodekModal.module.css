@@ -1,0 +1,134 @@
+﻿/* components/offer/modals/OsrodekModal.module.css */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 2rem;
+}
+
+.modal {
+    background-color: #2d3748;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #f7fafc;
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+    flex: 1;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #cbd5e0;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.input,
+.textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    color: #e2e8f0;
+    border-radius: 6px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: #4299e1;
+}
+
+/* Style specjalnie dla selectów */
+select.input {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    color: #e2e8f0;
+    border-radius: 6px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+select.input:focus {
+    outline: none;
+    border-color: #4299e1;
+}
+
+select.input option {
+    background-color: #1a202c;
+    color: #e2e8f0;
+    padding: 0.5rem;
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.formRow {
+    display: flex;
+    gap: 1rem;
+}
+
+.buttonContainer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.formGroup small {
+    display: block;
+    color: #a0aec0;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .formRow {
+        flex-direction: column;
+    }
+
+    .modal {
+        padding: 1.5rem;
+        width: 95%;
+        max-width: 100%;
+    }
+
+    .buttonContainer {
+        flex-direction: column;
+    }
+
+    .buttonContainer button {
+        width: 100%;
+    }
+}
