@@ -1,0 +1,126 @@
+﻿/* src/components/offer/OfertaCard.module.css */
+
+.card {
+    background-color: #2d3748;
+    border-radius: 8px;
+    border: 1px solid #4a5568;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    border-color: #718096;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cardContent {
+    padding: 24px;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.cardInfo {
+    flex: 1;
+}
+
+.cardTitle {
+    font-size: 20px;
+    font-weight: bold;
+    color: #f7fafc;
+    margin-bottom: 12px;
+}
+
+.infoRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #cbd5e0;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.priceContainer {
+    text-align: right;
+}
+
+.priceLabel {
+    font-size: 12px;
+    color: #a0aec0;
+    margin-bottom: 4px;
+}
+
+.price {
+    font-size: 28px;
+    font-weight: bold;
+    color: #90cdf4;
+}
+
+.priceSubtext {
+    font-size: 12px;
+    color: #a0aec0;
+}
+
+.badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.badgeActive {
+    background-color: rgba(72, 187, 120, 0.2);
+    color: #68d391;
+    border: 1px solid rgba(72, 187, 120, 0.3);
+}
+
+.badgeInactive {
+    background-color: rgba(160, 174, 192, 0.2);
+    color: #cbd5e0;
+    border: 1px solid rgba(160, 174, 192, 0.3);
+}
+
+.badgeTransport {
+    background-color: rgba(66, 153, 225, 0.2);
+    color: #90cdf4;
+    border: 1px solid rgba(66, 153, 225, 0.3);
+}
+
+.cardActions {
+    display: flex;
+    gap: 10px;
+}
+
+.expandedContent {
+    background-color: #1a202c;
+    padding: 24px;
+    border-top: 1px solid #4a5568;
+    color: #cbd5e0;
+}
+
+@media (max-width: 768px) {
+    .cardHeader {
+        flex-direction: column;
+    }
+
+    .priceContainer {
+        text-align: left;
+        margin-top: 16px;
+    }
+
+    .cardActions {
+        flex-direction: column;
+    }
+}

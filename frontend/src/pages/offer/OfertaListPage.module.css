@@ -1,0 +1,154 @@
+﻿.mainContent {
+    margin-top: 1.5rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.loadingText,
+.noResults {
+    color: #90cdf4;
+    text-align: center;
+    font-size: 1.25rem;
+    margin: 3rem 0;
+}
+
+.groupBox {
+    background: #232c3c;
+    border-radius: 8px;
+    padding: 1.3rem 1.5rem;
+    border: 1px solid #394357;
+    margin-bottom: 0.5rem;
+}
+
+.headRow {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-bottom: 1px solid #394357;
+    margin-bottom: 0.7rem;
+    padding-bottom: 0.25rem;
+    gap: 11px;
+    font-size: 1.07rem;
+}
+
+.groupTitle {
+    color: #f7fafc;
+    font-size: 1.17rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+.groupDest {
+    color: #afe1ff;
+    font-weight: 600;
+    font-size: 1.01rem;
+    margin-left: 1.7rem;
+}
+.groupTermsInfo {
+    color: #9faacc;
+    font-size: 0.97rem;
+    margin-left: 2.3rem;
+}
+
+.termList, .expandedList {
+    display: flex;
+    flex-direction: column;
+}
+.termRow, .termRowHighlight {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    padding: 7px 0;
+    cursor: pointer;
+    border-bottom: 1px solid #31384f;
+    font-size: 1.02rem;
+    background: none;
+    transition: background 0.15s;
+}
+.termRowHighlight {
+    background: #21304a;
+    border-bottom: 2px solid #48c7fc;
+    font-size: 1.04rem;
+    font-weight: 600;
+}
+
+.termRow:hover {
+    background: #283448;
+}
+
+.termDate {
+    min-width: 190px;
+    max-width: 250px;
+    font-size: 1rem;
+    color: #dbecff;
+    font-weight: 500;
+    display: inline-block;
+    word-break: break-all;
+}
+.termTransport {
+    width: 120px;
+    color: #b7ceea;
+    font-size: .98rem;
+}
+.termPrice {
+    width: 100px;
+    font-size: 1.07rem;
+    font-weight: 700;
+    color: #6ed2ff;
+}
+.termRooms {
+    width: 95px;
+    color: #8ceb8b;
+    font-size: 0.99rem;
+    font-weight: 500;
+}
+
+.detailsBtn {
+    margin-left: auto;
+    background: #232c3c;
+    border: 1px solid #4adcf1;
+    border-radius: 6px;
+    font-size: 0.93rem;
+    color: #55e1ec;
+    padding: 6px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background .13s, border-color .14s, color .13s;
+}
+.detailsBtn:hover {
+    background: #263b48;
+    border-color: #fac700;
+    color: #fac700;
+}
+.expandBtn {
+    margin-left: 20px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #2f3954;
+    border: 1px solid #455286;
+    color: #a8e1fd;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .1s, color .1s, border-color .1s;
+}
+.expandBtn:hover { background: #38547b; color: #ffd600; border-color: #ffd600; }
+
+.inactiveStatus {
+    margin-top: 0.8rem;
+    padding: 0.7rem;
+    background-color: rgba(252, 129, 129, 0.1);
+    border: 1px solid rgba(252, 129, 129, 0.3);
+    border-radius: 4px;
+    color: #fc8181;
+    font-size: 0.98rem;
+    text-align: center;
+}
+
+@media (max-width: 850px) {
+    .termRow, .termRowHighlight { flex-direction: column; align-items: flex-start; gap: 7px; }
+    .termDate, .termTransport, .termPrice, .termRooms, .detailsBtn, .expandBtn {
+        width: auto !important; min-width: unset !important; max-width: unset !important;
+    }
+    .detailsBtn, .expandBtn { align-self: flex-end; margin-left: 0; }
+}

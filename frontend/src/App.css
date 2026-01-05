@@ -40,3 +40,56 @@
 .read-the-docs {
     color: #888;
 }
+
+
+/* Styluj react-select dla dark mode */
+.react-select__control {
+    background-color: #232a36 !important;
+    border-color: #3d495f !important;
+    min-height: 42px;
+    color: #e2e8f0 !important;
+    font-size: 1rem;
+}
+
+.react-select__menu {
+    background-color: #232a36 !important;
+    color: #e2e8f0 !important;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 8px 20px 2px rgb(10 15 30 / 32%);
+    margin-top: -2px;
+}
+
+.react-select__option {
+    background-color: #232a36 !important;
+    color: #e2e8f0 !important;
+    padding: 10px 16px;
+    font-size: 1rem;
+}
+
+.react-select__option--is-selected {
+    background-color: #39435c !important;
+    color: #ffbf00 !important;
+}
+
+.react-select__option--is-focused {
+    background-color: #2d3748 !important;
+    color: #eee !important;
+}
+
+.react-select__single-value, .react-select__input, .react-select__placeholder {
+    color: #e2e8f0 !important;
+}
+
+.react-select__indicator-separator {
+    background-color: #48506d;
+}
+
+.react-select__dropdown-indicator {
+    color: #e2e8f0 !important;
+}
+
+.react-select__control--is-focused {
+    border-color: #3498db !important;
+    box-shadow: 0 0 3px #3498db;
+}
+

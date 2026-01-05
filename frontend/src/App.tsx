@@ -26,8 +26,12 @@ import PromocjePage from '@/pages/offer/PromocjePage';
 import OsrodkiPage from '@/pages/offer/OsrodkiPage';
 import OsrodekDetailsPage from '@/pages/offer/OsrodekDetailsPage';
 import OsrodekGaleriaPage from '@/pages/offer/OsrodekGaleriaPage';
+import OfertaListPage from '@/pages/offer/OfertaListPage';
+import OfertaDetailPage from '@/pages/offer/OfertaDetailPage';
+import CreateOfertaPage from '@/pages/offer/CreateOfertaPage';
+import EditOfertaPage from '@/pages/offer/EditOfertaPage';
+import OfertaGaleriaPage from '@/pages/offer/OfertaGaleriaPage';
 
-// Główny layout aplikacji po zalogowaniu (z paskiem nawigacyjnym)
 const AppLayout = () => {
     return (
         <div className="app-container">
@@ -42,7 +46,6 @@ const AppLayout = () => {
 function App() {
     const { isAuthenticated } = useAuth();
 
-    // Jeśli użytkownik nie jest zalogowany, pokaż tylko formularz logowania
     if (!isAuthenticated) {
         return (
             <NotificationProvider>
@@ -51,19 +54,15 @@ function App() {
         );
     }
 
-    // Jeśli jest zalogowany, pokaż pełną aplikację z routingiem
     return (
         <NotificationProvider>
             <Router>
                 <Routes>
-                    {/* Wszystkie chronione trasy są zagnieżdżone w AppLayout */}
                     <Route element={<AppLayout />}>
                         <Route path="/" element={<HomePage />} />
 
                         {/* Główna strona modułu faktur */}
                         <Route path="/faktury" element={<FakturyLayout />} />
-
-                        {/* Podstrony modułu faktur */}
                         <Route path="/faktury/lista" element={<FakturyListPage />} />
                         <Route path="/faktury/nowa" element={<NowaFakturaPage />} />
                         <Route path="/admin" element={<AdminPanel />} />
@@ -78,23 +77,43 @@ function App() {
                         <Route path="/klienci/grupy" element={<GrupyPage />} />
                         <Route path="/klienci/import" element={<ImportKlientow />} />
 
-                        {/* MODUŁ OFERT - Główna strona */}
+                        {/* ============================================ */}
+                        {/* MODUŁ OFERT */}
+                        {/* ============================================ */}
+
+                        {/* Dashboard ofert (kafelki) */}
                         <Route path="/oferta" element={<OfertaLayout />} />
 
-                        {/* MODUŁ OFERT - Konfiguracja (strona pośrednia) */}
+                        {/* Lista ofert */}
+                        <Route path="/oferta/lista" element={<OfertaListPage />} />
+                        <Route path="/oferta/nowa" element={<CreateOfertaPage />} />
+                        <Route path="/oferta/edytuj/:id" element={<EditOfertaPage />} />
+
+                        {/* ✅ Szczegóły oferty - NOWA ŚCIEŻKA */}
+                        <Route path="/oferta/szczegoly/:id" element={<OfertaDetailPage />} />
+                        <Route path="/oferta/:id/galeria" element={<OfertaGaleriaPage />} />
+
+                        {/* ✅ Nowa oferta */}
+
+                        {/* Konfiguracja (strona pośrednia) */}
                         <Route path="/oferta/konfiguracja" element={<KonfiguracjaLayout />} />
 
-                        {/* MODUŁ OFERT - Słowniki (pod konfiguracją) */}
+                        {/* Słowniki (pod konfiguracją) */}
                         <Route path="/oferta/konfiguracja/destynacje" element={<DestynacjaPage />} />
                         <Route path="/oferta/konfiguracja/transport" element={<TransportPage />} />
                         <Route path="/oferta/konfiguracja/wyzywienie" element={<WyzywieniePage />} />
                         <Route path="/oferta/konfiguracja/miejsca-odjazdu" element={<MiejsceOdjazduPage />} />
+
+                        {/* Promocje */}
                         <Route path="/oferta/promocje" element={<PromocjePage />} />
+
+                        {/* Ośrodki */}
                         <Route path="/oferta/osrodki" element={<OsrodkiPage />} />
                         <Route path="/oferta/osrodki/:id" element={<OsrodekDetailsPage />} />
-                        {/* MODUŁ OFERT - Galeria */}
-                        <Route path="/oferta/galeria" element={<GaleriaPage />} />
                         <Route path="/oferta/osrodki/:id/galeria" element={<OsrodekGaleriaPage />} />
+
+                        {/* Galeria */}
+                        <Route path="/oferta/galeria" element={<GaleriaPage />} />
 
                         {/* Przekierowanie dla nieznalezionych adresów */}
                         <Route path="*" element={<Navigate to="/" />} />

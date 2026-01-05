@@ -11,35 +11,32 @@ const OfertaLayout = () => {
             </header>
 
             <div className={styles.tileGrid}>
-                {/* Aktywne kafelki */}
-
-                
-                {/* Nieaktywne kafelki */}
-                <div className={styles.tile} style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                {/* ✅ AKTYWOWANY - Lista ofert */}
+                <Link to="/oferta/lista" className={styles.tile}>
                     <h3>Lista ofert</h3>
-                    <p>Przeglądaj wszystkie oferty - wkrótce dostępne.</p>
-                </div>
+                    <p>Przeglądaj wszystkie oferty.</p>
+                </Link>
 
                 <Link to="/oferta/osrodki" className={styles.tile}>
                     <h3>Ośrodki</h3>
                     <p>Zarządzaj ośrodkami.</p>
                 </Link>
 
-                <div className={styles.tile} style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                <Link to="/oferta/nowa" className={styles.tile}>
                     <h3>Dodaj ofertę</h3>
-                    <p>Utwórz nową ofertę - wkrótce dostępne.</p>
-                </div>
+                    <p>Utwórz nową ofertę.</p>
+                </Link>
+
 
                 <Link to="/oferta/promocje" className={styles.tile}>
                     <h3>Promocje</h3>
                     <p>Rabaty i kody promocyjne.</p>
                 </Link>
-                
+
                 <Link to="/oferta/galeria" className={styles.tile}>
                     <h3>Galeria</h3>
                     <p>Zdjęcia ofert i ośrodków.</p>
                 </Link>
-
 
                 <div className={styles.tile} style={{ opacity: 0.5, cursor: 'not-allowed' }}>
                     <h3>Statystyki</h3>
