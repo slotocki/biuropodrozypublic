@@ -1,36 +1,46 @@
-import './App.css';
+﻿import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { NotificationProvider } from '@/context/NotificationContext';
-import LoginForm from '@/components/LoginForm';
-import Navbar from '@/components/Navbar';
-import HomePage from '@/pages/HomePage';
-import KontrahenciPage from '@/pages/invoice_vat/KontrahenciPage';
-import FakturyLayout from '@/pages/invoice_vat/FakturyLayout';
-import FakturyListPage from '@/pages/invoice_vat/FakturyListPage';
-import NowaFakturaPage from '@/pages/invoice_vat/NowaFakturaPage';
-import AdminPanel from '@/pages/AdminPanel';
-import EdytujFakturaPage from '@/pages/invoice_vat/EdytujFakturaPage';
-import KlienciLayout from '@/pages/client/KlienciLayout';
-import KlienciPage from '@/pages/client/KlienciPage';
-import GrupyPage from '@/pages/client/GrupyPage';
-import ImportKlientow from '@/pages/client/ImportKlientow';
-import OfertaLayout from '@/pages/offer/OfertaLayout';
-import KonfiguracjaLayout from '@/pages/offer/KonfiguracjaLayout';
-import DestynacjaPage from '@/pages/offer/DestynacjaPage';
-import TransportPage from '@/pages/offer/TransportPage';
-import WyzywieniePage from '@/pages/offer/WyzywieniePage';
-import MiejsceOdjazduPage from '@/pages/offer/MiejsceOdjazduPage';
-import GaleriaPage from '@/pages/offer/GaleriaPage';
-import PromocjePage from '@/pages/offer/PromocjePage';
-import OsrodkiPage from '@/pages/offer/OsrodkiPage';
-import OsrodekDetailsPage from '@/pages/offer/OsrodekDetailsPage';
-import OsrodekGaleriaPage from '@/pages/offer/OsrodekGaleriaPage';
-import OfertaListPage from '@/pages/offer/OfertaListPage';
-import OfertaDetailPage from '@/pages/offer/OfertaDetailPage';
-import CreateOfertaPage from '@/pages/offer/CreateOfertaPage';
-import EditOfertaPage from '@/pages/offer/EditOfertaPage';
-import OfertaGaleriaPage from '@/pages/offer/OfertaGaleriaPage';
+import { useAuth } from '@/common/context/AuthContext';
+import { NotificationProvider } from '@/common/context/NotificationContext';
+import LoginForm from '@/common/components/LoginForm';
+import Navbar from '@/common/components/Navbar';
+
+// Home
+import HomePage from '@/features/home/pages/HomePage';
+
+// Admin
+import AdminPanel from '@/features/admin/pages/AdminPanel';
+
+// Invoice (Faktury)
+import KontrahenciPage from '@/features/invoice/pages/KontrahenciPage';
+import FakturyLayout from '@/features/invoice/pages/FakturyLayout';
+import FakturyListPage from '@/features/invoice/pages/FakturyListPage';
+import NowaFakturaPage from '@/features/invoice/pages/NowaFakturaPage';
+import EdytujFakturaPage from '@/features/invoice/pages/EdytujFakturaPage';
+
+// Client (Klienci)
+import KlienciLayout from '@/features/client/pages/KlienciLayout';
+import KlienciPage from '@/features/client/pages/KlienciPage';
+import GrupyPage from '@/features/client/pages/GrupyPage';
+import ImportKlientow from '@/features/client/pages/ImportKlientow';
+
+// Offer (Oferty)
+import OfertaLayout from '@/features/offer/pages/OfertaLayout';
+import KonfiguracjaLayout from '@/features/offer/pages/KonfiguracjaLayout';
+import DestynacjaPage from '@/features/offer/pages/DestynacjaPage';
+import TransportPage from '@/features/offer/pages/TransportPage';
+import WyzywieniePage from '@/features/offer/pages/WyzywieniePage';
+import MiejsceOdjazduPage from '@/features/offer/pages/MiejsceOdjazduPage';
+import GaleriaPage from '@/features/offer/pages/GaleriaPage';
+import PromocjePage from '@/features/offer/pages/PromocjePage';
+import OsrodkiPage from '@/features/offer/pages/OsrodkiPage';
+import OsrodekDetailsPage from '@/features/offer/pages/OsrodekDetailsPage';
+import OsrodekGaleriaPage from '@/features/offer/pages/OsrodekGaleriaPage';
+import OfertaListPage from '@/features/offer/pages/OfertaListPage';
+import OfertaDetailPage from '@/features/offer/pages/OfertaDetailPage';
+import CreateOfertaPage from '@/features/offer/pages/CreateOfertaPage';
+import EditOfertaPage from '@/features/offer/pages/EditOfertaPage';
+import OfertaGaleriaPage from '@/features/offer/pages/OfertaGaleriaPage';
 
 const AppLayout = () => {
     return (
@@ -89,11 +99,10 @@ function App() {
                         <Route path="/oferta/nowa" element={<CreateOfertaPage />} />
                         <Route path="/oferta/edytuj/:id" element={<EditOfertaPage />} />
 
-                        {/* ✅ Szczegóły oferty - NOWA ŚCIEŻKA */}
+                        {/* Szczegóły oferty */}
                         <Route path="/oferta/szczegoly/:id" element={<OfertaDetailPage />} />
                         <Route path="/oferta/:id/galeria" element={<OfertaGaleriaPage />} />
 
-                        {/* ✅ Nowa oferta */}
 
                         {/* Konfiguracja (strona pośrednia) */}
                         <Route path="/oferta/konfiguracja" element={<KonfiguracjaLayout />} />
