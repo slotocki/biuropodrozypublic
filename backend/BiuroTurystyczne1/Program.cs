@@ -59,6 +59,7 @@ builder.Services.AddScoped<IAddressValidationService, AddressValidationService>(
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IKlienciImportService, KlienciImportService>();
+builder.Services.AddScoped<OfertaService>();
 
 // --- Budowanie Aplikacji ---
 var app = builder.Build();

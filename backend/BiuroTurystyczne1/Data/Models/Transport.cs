@@ -9,5 +9,5 @@ public partial class Transport
 
     public string RodzajTransportu { get; set; } = null!;
 
-    public virtual ICollection<Ofertum> Oferta { get; set; } = new List<Ofertum>();
+    public virtual ICollection<TransportOfertum> TransportOferta { get; set; } = new List<TransportOfertum>();
 }

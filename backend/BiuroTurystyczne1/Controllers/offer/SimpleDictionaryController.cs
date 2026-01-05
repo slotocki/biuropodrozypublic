@@ -18,7 +18,7 @@ public class SimpleDictionaryController : ControllerBase
         _context = context;
     }
 
-    // GET: api/SimpleDictionary/destynacja
+    // GET: api/SimpleDictionary/destynacja  (lub inne typy)
     [HttpGet("{entityType}")]
     public async Task<IActionResult> GetAll(string entityType)
     {
@@ -27,27 +27,39 @@ public class SimpleDictionaryController : ControllerBase
             "destynacja" => await _context.Destynacjas
                 .Select(d => new { d.IdDestynacja, d.Nazwa })
                 .ToListAsync(),
-            
+
             "transport" => await _context.Transports
                 .Select(t => new { t.IdTransport, t.RodzajTransportu })
                 .ToListAsync(),
-            
-            "wyzywienie" => await _context.Wyzywienies  
+
+            "wyzywienie" => await _context.Wyzywienies
                 .Select(w => new { w.IdWyzywienie, w.RodzajWyzywienia })
                 .ToListAsync(),
-            
-            "miejsce" => await _context.MiejsceOdjazdus 
+
+            "miejsce" => await _context.MiejsceOdjazdus
                 .Select(m => new { m.IdMiejsce, m.NazwaMiejsca, m.Adres, m.Opis })
                 .ToListAsync(),
-            
+
+            "pokoje-rodzaj" => await _context.PokojRodzajs
+                .Select(r => new { r.IdRodzajPokoju, r.RodzajPokoju })
+                .ToListAsync(),
+
+            "nazwahandlowa" => await _context.NazwaHandlowas
+                .OrderBy(n => n.NazwaHandlowa1)
+                .Select(n => new { n.IdNazwaHandlowa, Nazwa = n.NazwaHandlowa1, n.Opis })
+                .ToListAsync(),
+
             _ => null
         };
 
-        if (data == null) return BadRequest(new { message = "Nieprawidłowy typ encji." });
+        if (data == null)
+            return BadRequest(new { message = "Nieprawidłowy typ encji." });
+
         return Ok(data);
     }
 
-    // POST: api/SimpleDictionary/destynacja
+
+    // POST: api/SimpleDictionary/{entityType}
     [HttpPost("{entityType}")]
     public async Task<IActionResult> Create(string entityType, [FromBody] JsonElement body)
     {
@@ -56,42 +68,61 @@ public class SimpleDictionaryController : ControllerBase
             switch (entityType.ToLower())
             {
                 case "destynacja":
-                    var destynacja = new Destynacja 
-                    { 
-                        Nazwa = body.GetProperty("nazwa").GetString() ?? string.Empty 
+                    var destynacja = new Destynacja
+                    {
+                        Nazwa = body.GetProperty("nazwa").GetString() ?? string.Empty
                     };
                     _context.Destynacjas.Add(destynacja);
                     await _context.SaveChangesAsync();
                     return Ok(new { destynacja.IdDestynacja, destynacja.Nazwa });
 
                 case "transport":
-                    var transport = new Transport 
-                    { 
-                        RodzajTransportu = body.GetProperty("rodzajTransportu").GetString() ?? string.Empty 
+                    var transport = new Transport
+                    {
+                        RodzajTransportu = body.GetProperty("rodzajTransportu").GetString() ?? string.Empty
                     };
                     _context.Transports.Add(transport);
                     await _context.SaveChangesAsync();
                     return Ok(new { transport.IdTransport, transport.RodzajTransportu });
 
                 case "wyzywienie":
-                    var wyzywienie = new Wyzywienie 
-                    { 
-                        RodzajWyzywienia = body.GetProperty("rodzajWyzywienia").GetString() ?? string.Empty 
+                    var wyzywienie = new Wyzywienie
+                    {
+                        RodzajWyzywienia = body.GetProperty("rodzajWyzywienia").GetString() ?? string.Empty
                     };
-                    _context.Wyzywienies.Add(wyzywienie);  // ✅ ZMIENIONE
+                    _context.Wyzywienies.Add(wyzywienie);
                     await _context.SaveChangesAsync();
                     return Ok(new { wyzywienie.IdWyzywienie, wyzywienie.RodzajWyzywienia });
 
                 case "miejsce":
-                    var miejsce = new MiejsceOdjazdu 
-                    { 
+                    var miejsce = new MiejsceOdjazdu
+                    {
                         NazwaMiejsca = body.GetProperty("nazwaMiejsca").GetString() ?? string.Empty,
                         Adres = body.TryGetProperty("adres", out var a) ? a.GetString() : null,
                         Opis = body.TryGetProperty("opis", out var o) ? o.GetString() : null
                     };
-                    _context.MiejsceOdjazdus.Add(miejsce);  // ✅ ZMIENIONE
+                    _context.MiejsceOdjazdus.Add(miejsce);
                     await _context.SaveChangesAsync();
                     return Ok(new { miejsce.IdMiejsce, miejsce.NazwaMiejsca, miejsce.Adres, miejsce.Opis });
+
+                case "pokoje-rodzaj":
+                    var rodzaj = new PokojRodzaj
+                    {
+                        RodzajPokoju = body.GetProperty("rodzajPokoju").GetString() ?? string.Empty
+                    };
+                    _context.PokojRodzajs.Add(rodzaj);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { rodzaj.IdRodzajPokoju, rodzaj.RodzajPokoju });
+
+                case "nazwahandlowa":
+                    var nowaNazwa = new NazwaHandlowa
+                    {
+                        NazwaHandlowa1 = body.GetProperty("nazwa").GetString() ?? string.Empty,
+                        Opis = body.TryGetProperty("opis", out var opisN) ? opisN.GetString() : null
+                    };
+                    _context.NazwaHandlowas.Add(nowaNazwa);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { nowaNazwa.IdNazwaHandlowa, Nazwa = nowaNazwa.NazwaHandlowa1, nowaNazwa.Opis });
 
                 default:
                     return BadRequest(new { message = "Nieprawidłowy typ encji." });
@@ -103,7 +134,8 @@ public class SimpleDictionaryController : ControllerBase
         }
     }
 
-    // PUT: api/SimpleDictionary/destynacja/5
+
+    // PUT: api/SimpleDictionary/{entityType}/{id}
     [HttpPut("{entityType}/{id}")]
     public async Task<IActionResult> Update(string entityType, int id, [FromBody] JsonElement body)
     {
@@ -124,17 +156,30 @@ public class SimpleDictionaryController : ControllerBase
                     break;
 
                 case "wyzywienie":
-                    var wyzywienie = await _context.Wyzywienies.FindAsync((uint)id);  // ✅ ZMIENIONE
+                    var wyzywienie = await _context.Wyzywienies.FindAsync((uint)id);
                     if (wyzywienie == null) return NotFound();
                     wyzywienie.RodzajWyzywienia = body.GetProperty("rodzajWyzywienia").GetString() ?? string.Empty;
                     break;
 
                 case "miejsce":
-                    var miejsce = await _context.MiejsceOdjazdus.FindAsync((uint)id);  // ✅ ZMIENIONE
+                    var miejsce = await _context.MiejsceOdjazdus.FindAsync((uint)id);
                     if (miejsce == null) return NotFound();
                     miejsce.NazwaMiejsca = body.GetProperty("nazwaMiejsca").GetString() ?? string.Empty;
                     if (body.TryGetProperty("adres", out var a)) miejsce.Adres = a.GetString();
                     if (body.TryGetProperty("opis", out var o)) miejsce.Opis = o.GetString();
+                    break;
+
+                case "pokoje-rodzaj":
+                    var rodzaj = await _context.PokojRodzajs.FindAsync((uint)id);
+                    if (rodzaj == null) return NotFound();
+                    rodzaj.RodzajPokoju = body.GetProperty("rodzajPokoju").GetString() ?? string.Empty;
+                    break;
+
+                case "nazwahandlowa":
+                    var nazwa = await _context.NazwaHandlowas.FindAsync((uint)id);
+                    if (nazwa == null) return NotFound();
+                    nazwa.NazwaHandlowa1 = body.GetProperty("nazwa").GetString() ?? string.Empty;
+                    if (body.TryGetProperty("opis", out var opisN)) nazwa.Opis = opisN.GetString();
                     break;
 
                 default:
@@ -150,7 +195,8 @@ public class SimpleDictionaryController : ControllerBase
         }
     }
 
-    // DELETE: api/SimpleDictionary/destynacja/5
+
+    // DELETE: api/SimpleDictionary/{entityType}/{id}
     [HttpDelete("{entityType}/{id}")]
     public async Task<IActionResult> Delete(string entityType, int id)
     {
@@ -171,15 +217,33 @@ public class SimpleDictionaryController : ControllerBase
                     break;
 
                 case "wyzywienie":
-                    var wyzywienie = await _context.Wyzywienies.FindAsync((uint)id);  // ✅ ZMIENIONE
+                    var wyzywienie = await _context.Wyzywienies.FindAsync((uint)id);
                     if (wyzywienie == null) return NotFound();
-                    _context.Wyzywienies.Remove(wyzywienie);  // ✅ ZMIENIONE
+                    _context.Wyzywienies.Remove(wyzywienie);
                     break;
 
                 case "miejsce":
-                    var miejsce = await _context.MiejsceOdjazdus.FindAsync((uint)id);  // ✅ ZMIENIONE
+                    var miejsce = await _context.MiejsceOdjazdus.FindAsync((uint)id);
                     if (miejsce == null) return NotFound();
-                    _context.MiejsceOdjazdus.Remove(miejsce);  // ✅ ZMIENIONE
+                    _context.MiejsceOdjazdus.Remove(miejsce);
+                    break;
+
+                case "pokoje-rodzaj":
+                    var rodzaj = await _context.PokojRodzajs.FindAsync((uint)id);
+                    if (rodzaj == null) return NotFound();
+                    var hasPokoje = await _context.Pokojs.AnyAsync(p => p.IdRodzajPokoju == (uint)id);
+                    if (hasPokoje)
+                        return BadRequest(new { message = "Nie można usunąć rodzaju pokoju, który jest przypisany do pokoi." });
+                    _context.PokojRodzajs.Remove(rodzaj);
+                    break;
+
+                case "nazwahandlowa":
+                    var nazwa = await _context.NazwaHandlowas.FindAsync((uint)id);
+                    if (nazwa == null) return NotFound();
+                    var hasOferty = await _context.Oferta.AnyAsync(o => o.IdNazwaHandlowa == (uint)id);
+                    if (hasOferty)
+                        return BadRequest(new { message = "Nie można usunąć nazwy handlowej, która jest przypisana do ofert." });
+                    _context.NazwaHandlowas.Remove(nazwa);
                     break;
 
                 default:

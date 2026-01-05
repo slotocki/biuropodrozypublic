@@ -35,6 +35,8 @@ public partial class Rezerwacja
 
     public virtual ICollection<Platnosc> Platnoscs { get; set; } = new List<Platnosc>();
 
+    public virtual ICollection<RezerwacjaTransport> RezerwacjaTransports { get; set; } = new List<RezerwacjaTransport>();
+
     public virtual Rozliczenie? Rozliczenie { get; set; }
 
     public virtual ICollection<UczestnikRezerwacji> UczestnikRezerwacjis { get; set; } = new List<UczestnikRezerwacji>();

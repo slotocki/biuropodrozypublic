@@ -17,6 +17,10 @@ public partial class Pokoj
 
     public byte MaxIloscOsob { get; set; }
 
+    public string? NumerPokoju { get; set; }
+
+    public string? OpisPokoju { get; set; }
+
     public virtual Osrodek IdOsrodekNavigation { get; set; } = null!;
 
     public virtual PokojRodzaj IdRodzajPokojuNavigation { get; set; } = null!;

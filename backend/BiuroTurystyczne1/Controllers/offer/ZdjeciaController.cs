@@ -166,6 +166,56 @@ public class ZdjeciaController : ControllerBase
         return Ok(new { message = $"Przesłano {uploadedFiles.Count} zdjęć.", zdjecia = uploadedFiles });
     }
 
+    [HttpGet("/api/oferta/{id}/galeria")]
+    public async Task<IActionResult> GetZdjeciaOferty(uint id)
+    {
+        var oferta = await _context.Oferta
+            .Include(o => o.OfertaOsrodeks)
+            .ThenInclude(oo => oo.IdOsrodekNavigation)
+            .Include(o => o.IdDestynacjaNavigation)
+            .FirstOrDefaultAsync(o => o.IdOferta == id);
+
+        if (oferta == null) return NotFound();
+
+        var destPhotos = await _context.Zdjecia
+            .Where(z => z.IdDestynacja == oferta.IdDestynacja)
+            .Select(z => new {
+                id = z.IdZdjecie,
+                url = z.SciezkaPliku,
+                opis = z.OpisZdjecia,
+                czyGlowne = z.CzyGlowne,
+                sourceType = "destynacja",
+                meta1 = (string)null,                              
+                meta2 = oferta.IdDestynacjaNavigation.Nazwa
+            })
+            .ToListAsync();
+
+        // Zdjęcia powiązanych ośrodków przez tabelę OfertaOsrodek
+        var allOsrodekIds = oferta.OfertaOsrodeks.Select(oo => oo.IdOsrodek).ToList();
+
+        var destynacjaNazwa = oferta.IdDestynacjaNavigation?.Nazwa;
+
+        var osrodekPhotos = await _context.Zdjecia
+            .Where(z => z.IdOsrodek != null && allOsrodekIds.Contains(z.IdOsrodek.Value))
+            .Select(z => new {
+                id = z.IdZdjecie,
+                url = z.SciezkaPliku,
+                opis = z.OpisZdjecia,
+                czyGlowne = z.CzyGlowne,
+                sourceType = "osrodek",
+                meta1 = z.IdOsrodekNavigation.NazwaOsrodka,
+                meta2 = destynacjaNazwa
+            })
+            .ToListAsync();
+
+
+        var allPhotos = destPhotos.Concat(osrodekPhotos).ToList();
+
+        return Ok(allPhotos);
+
+    }
+
+    
     // PUT: api/Zdjecia/5
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateZdjecie(int id, [FromBody] UpdateZdjecieDto dto)

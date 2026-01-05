@@ -45,6 +45,8 @@ public partial class BiuroDbContext : DbContext
 
     public virtual DbSet<MiejsceOdjazdu> MiejsceOdjazdus { get; set; }
 
+    public virtual DbSet<NazwaHandlowa> NazwaHandlowas { get; set; }
+
     public virtual DbSet<Notatki> Notatkis { get; set; }
 
     public virtual DbSet<Obywatelstwo> Obywatelstwos { get; set; }
@@ -67,11 +69,15 @@ public partial class BiuroDbContext : DbContext
 
     public virtual DbSet<Rezerwacja> Rezerwacjas { get; set; }
 
+    public virtual DbSet<RezerwacjaTransport> RezerwacjaTransports { get; set; }
+
     public virtual DbSet<Rozliczenie> Rozliczenies { get; set; }
 
     public virtual DbSet<Sesja> Sesjas { get; set; }
 
     public virtual DbSet<Transport> Transports { get; set; }
+
+    public virtual DbSet<TransportOfertum> TransportOferta { get; set; }
 
     public virtual DbSet<UczestnikRezerwacji> UczestnikRezerwacjis { get; set; }
 
@@ -496,6 +502,23 @@ public partial class BiuroDbContext : DbContext
             entity.Property(e => e.Opis).HasMaxLength(500);
         });
 
+        modelBuilder.Entity<NazwaHandlowa>(entity =>
+        {
+            entity.HasKey(e => e.IdNazwaHandlowa).HasName("PRIMARY");
+
+            entity.ToTable("NazwaHandlowa");
+
+            entity.HasIndex(e => e.NazwaHandlowa1, "uq_nazwahandlowa").IsUnique();
+
+            entity.Property(e => e.IdNazwaHandlowa)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("ID_nazwa_handlowa");
+            entity.Property(e => e.NazwaHandlowa1)
+                .HasMaxLength(200)
+                .HasColumnName("NazwaHandlowa");
+            entity.Property(e => e.Opis).HasColumnType("text");
+        });
+
         modelBuilder.Entity<Notatki>(entity =>
         {
             entity.HasKey(e => e.IdNotatki).HasName("PRIMARY");
@@ -580,28 +603,36 @@ public partial class BiuroDbContext : DbContext
 
             entity.HasIndex(e => e.IdDestynacja, "fk_oferta_dest");
 
-            entity.HasIndex(e => e.IdTransport, "fk_oferta_trans");
+            entity.HasIndex(e => e.IdNazwaHandlowa, "fk_oferta_nazwahandlowa");
+
+            entity.HasIndex(e => new { e.CzyAktywna, e.TerminDo }, "idx_oferta_aktywna");
 
             entity.Property(e => e.IdOferta)
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("ID_oferta");
-            entity.Property(e => e.DataWykwaterowania).HasColumnName("Data_wykwaterowania");
-            entity.Property(e => e.DataZakwaterowania).HasColumnName("Data_zakwaterowania");
+            entity.Property(e => e.CzyAktywna)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("Czy_aktywna");
+            entity.Property(e => e.DataWykwaterowania)
+                .HasColumnType("datetime")
+                .HasColumnName("Data_wykwaterowania");
+            entity.Property(e => e.DataZakwaterowania)
+                .HasColumnType("datetime")
+                .HasColumnName("Data_zakwaterowania");
             entity.Property(e => e.IdDestynacja)
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("ID_destynacja");
-            entity.Property(e => e.IdTransport)
+            entity.Property(e => e.IdNazwaHandlowa)
                 .HasColumnType("int(10) unsigned")
-                .HasColumnName("ID_transport");
+                .HasColumnName("ID_nazwa_handlowa");
             entity.Property(e => e.IloscMiejscPokoje)
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("Ilosc_miejsc_pokoje");
             entity.Property(e => e.IloscMiejscTransport)
                 .HasColumnType("int(10) unsigned")
                 .HasColumnName("Ilosc_miejsc_transport");
-            entity.Property(e => e.NazwaHandlowa)
-                .HasMaxLength(200)
-                .HasColumnName("Nazwa_handlowa");
+            entity.Property(e => e.Opis).HasColumnType("text");
             entity.Property(e => e.TerminDo).HasColumnName("Termin_do");
             entity.Property(e => e.TerminOd).HasColumnName("Termin_od");
 
@@ -610,10 +641,10 @@ public partial class BiuroDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_oferta_dest");
 
-            entity.HasOne(d => d.IdTransportNavigation).WithMany(p => p.Oferta)
-                .HasForeignKey(d => d.IdTransport)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_oferta_trans");
+            entity.HasOne(d => d.IdNazwaHandlowaNavigation).WithMany(p => p.Oferta)
+                .HasForeignKey(d => d.IdNazwaHandlowa)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("fk_oferta_nazwahandlowa");
 
             entity.HasMany(d => d.IdMiejsces).WithMany(p => p.IdOferta)
                 .UsingEntity<Dictionary<string, object>>(
@@ -786,6 +817,12 @@ public partial class BiuroDbContext : DbContext
             entity.Property(e => e.MaxIloscOsob)
                 .HasColumnType("tinyint(3) unsigned")
                 .HasColumnName("Max_ilosc_osob");
+            entity.Property(e => e.NumerPokoju)
+                .HasMaxLength(255)
+                .HasColumnName("numer_pokoju");
+            entity.Property(e => e.OpisPokoju)
+                .HasMaxLength(255)
+                .HasColumnName("opis_pokoju");
 
             entity.HasOne(d => d.IdOsrodekNavigation).WithMany(p => p.Pokojs)
                 .HasForeignKey(d => d.IdOsrodek)
@@ -954,6 +991,40 @@ public partial class BiuroDbContext : DbContext
                     });
         });
 
+        modelBuilder.Entity<RezerwacjaTransport>(entity =>
+        {
+            entity.HasKey(e => e.IdRezerwacjaTransport).HasName("PRIMARY");
+
+            entity.ToTable("Rezerwacja_transport");
+
+            entity.HasIndex(e => e.IdRezerwacja, "fk_reztrans_rez");
+
+            entity.HasIndex(e => e.IdTransportOferta, "fk_reztrans_trans");
+
+            entity.Property(e => e.IdRezerwacjaTransport)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("ID_rezerwacja_transport");
+            entity.Property(e => e.CzyDojazdWlasny).HasColumnName("Czy_dojazd_wlasny");
+            entity.Property(e => e.IdRezerwacja)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("ID_rezerwacja");
+            entity.Property(e => e.IdTransportOferta)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("ID_transport_oferta");
+            entity.Property(e => e.UwagiTransport)
+                .HasMaxLength(255)
+                .HasColumnName("Uwagi_transport");
+
+            entity.HasOne(d => d.IdRezerwacjaNavigation).WithMany(p => p.RezerwacjaTransports)
+                .HasForeignKey(d => d.IdRezerwacja)
+                .HasConstraintName("fk_reztrans_rez");
+
+            entity.HasOne(d => d.IdTransportOfertaNavigation).WithMany(p => p.RezerwacjaTransports)
+                .HasForeignKey(d => d.IdTransportOferta)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("fk_reztrans_trans");
+        });
+
         modelBuilder.Entity<Rozliczenie>(entity =>
         {
             entity.HasKey(e => e.IdRozliczenie).HasName("PRIMARY");
@@ -1034,6 +1105,42 @@ public partial class BiuroDbContext : DbContext
             entity.Property(e => e.RodzajTransportu)
                 .HasMaxLength(100)
                 .HasColumnName("Rodzaj_transportu");
+        });
+
+        modelBuilder.Entity<TransportOfertum>(entity =>
+        {
+            entity.HasKey(e => e.IdTransportOferta).HasName("PRIMARY");
+
+            entity.ToTable("Transport_oferta");
+
+            entity.HasIndex(e => e.IdTransport, "fk_transofe_trans");
+
+            entity.HasIndex(e => new { e.IdOferta, e.IdTransport }, "uq_transport_oferta").IsUnique();
+
+            entity.Property(e => e.IdTransportOferta)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("ID_transport_oferta");
+            entity.Property(e => e.GodzinaOdjazdu)
+                .HasColumnType("time")
+                .HasColumnName("Godzina_odjazdu");
+            entity.Property(e => e.IdOferta)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("ID_oferta");
+            entity.Property(e => e.IdTransport)
+                .HasColumnType("int(10) unsigned")
+                .HasColumnName("ID_transport");
+            entity.Property(e => e.IloscMiejsc)
+                .HasColumnType("smallint(5) unsigned")
+                .HasColumnName("Ilosc_miejsc");
+
+            entity.HasOne(d => d.IdOfertaNavigation).WithMany(p => p.TransportOferta)
+                .HasForeignKey(d => d.IdOferta)
+                .HasConstraintName("fk_transofe_oferta");
+
+            entity.HasOne(d => d.IdTransportNavigation).WithMany(p => p.TransportOferta)
+                .HasForeignKey(d => d.IdTransport)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_transofe_trans");
         });
 
         modelBuilder.Entity<UczestnikRezerwacji>(entity =>
