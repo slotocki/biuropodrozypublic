@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '@/common/api/apiClient';
 import { useNotification } from '@/common/context/NotificationContext';
 import '@/common/styles/PageStyles.css';
+
 interface User {
     id: string;
     email: string;
     roles: string[];
 }
+
+const USERS_PER_PAGE = 5;
 
 const AdminPanel = () => {
     const navigate = useNavigate();
@@ -24,6 +27,11 @@ const AdminPanel = () => {
         password: '',
         role: ''
     });
+
+    // Filtry i paginacja
+    const [filterEmail, setFilterEmail] = useState('');
+    const [filterRole, setFilterRole] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     const fetchUsers = async () => {
         try {
@@ -51,6 +59,27 @@ const AdminPanel = () => {
         fetchUsers();
         fetchRoles();
     }, []);
+
+    // Filtrowanie użytkowników
+    const filteredUsers = useMemo(() => {
+        return users.filter(user => {
+            const matchesEmail = user.email.toLowerCase().includes(filterEmail.toLowerCase());
+            const matchesRole = filterRole === '' || user.roles.includes(filterRole) || (filterRole === 'Brak' && user.roles.length === 0);
+            return matchesEmail && matchesRole;
+        });
+    }, [users, filterEmail, filterRole]);
+
+    // Paginacja
+    const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+    const paginatedUsers = useMemo(() => {
+        const startIndex = (currentPage - 1) * USERS_PER_PAGE;
+        return filteredUsers.slice(startIndex, startIndex + USERS_PER_PAGE);
+    }, [filteredUsers, currentPage]);
+
+    // Reset strony przy zmianie filtrów
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterEmail, filterRole]);
 
     const handleAddNew = () => {
         setEditingUser(null);
@@ -121,28 +150,343 @@ const AdminPanel = () => {
         }
     };
 
+    const buttonStyle = {
+        padding: '0.6rem 1.2rem',
+        borderRadius: '6px',
+        fontSize: '0.95rem',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        textDecoration: 'none'
+    };
+
+    const actionButtonStyle = {
+        padding: '0.5rem 0.75rem',
+        border: '2px solid transparent',
+        borderRadius: '6px',
+        color: '#fff',
+        cursor: 'pointer',
+        fontSize: '0.85rem',
+        transition: 'all 0.2s ease'
+    };
+
     return (
         <div className="page-container">
+            {/* Przycisk cofania NAD nagłówkiem */}
+            <div style={{ marginBottom: '1rem' }}>
+                <button 
+                    className="btn btn-secondary" 
+                    onClick={() => navigate('/')}
+                    style={{ ...buttonStyle }}
+                >
+                    ← Panel główny
+                </button>
+            </div>
+
             <header className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button 
-                        className="btn btn-secondary" 
-                        onClick={() => navigate(-1)}
-                        style={{ padding: '0.5rem 1rem' }}
-                    >
-                        ← Wstecz
-                    </button>
-                    <h1>👥 Panel Administracyjny</h1>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <Link to="/admin/ustawienia-firmy" className="btn btn-secondary">
+                <h1 style={{ margin: 0 }}>⚙️ Panel Administracyjny</h1>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <Link to="/admin/ustawienia-firmy" className="btn btn-secondary" style={buttonStyle}>
                         🏢 Dane firmy
                     </Link>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
+                    <button className="btn btn-primary" onClick={handleAddNew} style={buttonStyle}>
                         ➕ Dodaj użytkownika
                     </button>
                 </div>
             </header>
+
+            {/* Sekcja użytkowników */}
+            <div style={{
+                backgroundColor: '#2d3748',
+                borderRadius: '12px',
+                padding: '1.5rem',
+                marginTop: '1rem'
+            }}>
+                <h2 style={{ 
+                    color: '#e2e8f0', 
+                    margin: '0 0 1.5rem 0',
+                    fontSize: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                }}>
+                    👥 Zarządzanie użytkownikami
+                    <span style={{ 
+                        fontSize: '0.85rem', 
+                        color: '#a0aec0',
+                        fontWeight: 'normal'
+                    }}>
+                        ({filteredUsers.length} {filteredUsers.length === 1 ? 'użytkownik' : 'użytkowników'})
+                    </span>
+                </h2>
+
+                {/* Filtry */}
+                <div style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    marginBottom: '1.5rem',
+                    alignItems: 'center'
+                }}>
+                    <input
+                        type="text"
+                        placeholder="🔍 Szukaj po emailu..."
+                        value={filterEmail}
+                        onChange={(e) => setFilterEmail(e.target.value)}
+                        style={{
+                            flex: '1',
+                            minWidth: '200px',
+                            padding: '0.75rem 1rem',
+                            backgroundColor: '#1a202c',
+                            border: '1px solid #4a5568',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '0.95rem',
+                            height: '44px',
+                            boxSizing: 'border-box'
+                        }}
+                    />
+                    <select
+                        value={filterRole}
+                        onChange={(e) => setFilterRole(e.target.value)}
+                        style={{
+                            width: '180px',
+                            padding: '0.75rem 1rem',
+                            backgroundColor: '#1a202c',
+                            border: '1px solid #4a5568',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '0.95rem',
+                            height: '44px',
+                            boxSizing: 'border-box'
+                        }}
+                    >
+                        <option value="">Wszystkie role</option>
+                        {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                        <option value="Brak">Brak roli</option>
+                    </select>
+                    {(filterEmail || filterRole) && (
+                        <button
+                            onClick={() => { setFilterEmail(''); setFilterRole(''); }}
+                            style={{
+                                padding: '0.75rem 1rem',
+                                backgroundColor: '#4a5568',
+                                border: 'none',
+                                borderRadius: '8px',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                fontSize: '0.95rem',
+                                height: '44px',
+                                boxSizing: 'border-box',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            ✕ Wyczyść
+                        </button>
+                    )}
+                </div>
+
+                {/* Lista użytkowników */}
+                {paginatedUsers.length === 0 ? (
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '3rem',
+                        color: '#a0aec0'
+                    }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+                        <p>Nie znaleziono użytkowników spełniających kryteria</p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {paginatedUsers.map(user => (
+                            <div
+                                key={user.id}
+                                style={{
+                                    backgroundColor: '#1a202c',
+                                    borderRadius: '10px',
+                                    padding: '1rem 1.25rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    border: '1px solid #4a5568',
+                                    transition: 'border-color 0.2s',
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.borderColor = '#667eea'}
+                                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#4a5568'}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#667eea',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#fff',
+                                        fontWeight: 'bold',
+                                        fontSize: '1.1rem'
+                                    }}>
+                                        {user.email.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div style={{ color: '#fff', fontWeight: 500, fontSize: '1rem' }}>
+                                            {user.email}
+                                        </div>
+                                        <div style={{ 
+                                            display: 'flex', 
+                                            gap: '0.5rem', 
+                                            marginTop: '0.25rem' 
+                                        }}>
+                                            {user.roles.length > 0 ? (
+                                                user.roles.map(role => (
+                                                    <span
+                                                        key={role}
+                                                        style={{
+                                                            padding: '2px 8px',
+                                                            backgroundColor: role === 'Admin' ? '#48bb78' : '#4299e1',
+                                                            color: '#fff',
+                                                            borderRadius: '4px',
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: 500
+                                                        }}
+                                                    >
+                                                        {role}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span style={{
+                                                    padding: '2px 8px',
+                                                    backgroundColor: '#718096',
+                                                    color: '#fff',
+                                                    borderRadius: '4px',
+                                                    fontSize: '0.75rem'
+                                                }}>
+                                                    Brak roli
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button
+                                        onClick={() => handleEdit(user)}
+                                        style={{
+                                            ...actionButtonStyle,
+                                            backgroundColor: '#4a5568',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = '#a0aec0';
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = 'transparent';
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                        }}
+                                        title="Edytuj"
+                                    >
+                                        ✏️
+                                    </button>
+                                    <button
+                                        onClick={() => handleResetPassword(user.id)}
+                                        style={{
+                                            ...actionButtonStyle,
+                                            backgroundColor: '#ed8936',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = '#fbd38d';
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = 'transparent';
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                        }}
+                                        title="Reset hasła"
+                                    >
+                                        🔑
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(user.id)}
+                                        style={{
+                                            ...actionButtonStyle,
+                                            backgroundColor: '#e53e3e',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = '#fc8181';
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = 'transparent';
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                        }}
+                                        title="Usuń"
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Paginacja */}
+                {totalPages > 1 && (
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        marginTop: '1.5rem',
+                        paddingTop: '1rem',
+                        borderTop: '1px solid #4a5568'
+                    }}>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: currentPage === 1 ? '#2d3748' : '#4a5568',
+                                border: 'none',
+                                borderRadius: '6px',
+                                color: currentPage === 1 ? '#718096' : '#fff',
+                                cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            ←
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                style={{
+                                    padding: '0.5rem 0.75rem',
+                                    backgroundColor: currentPage === page ? '#667eea' : '#4a5568',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    color: '#fff',
+                                    cursor: 'pointer',
+                                    fontWeight: currentPage === page ? 'bold' : 'normal'
+                                }}
+                            >
+                                {page}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: currentPage === totalPages ? '#2d3748' : '#4a5568',
+                                border: 'none',
+                                borderRadius: '6px',
+                                color: currentPage === totalPages ? '#718096' : '#fff',
+                                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            →
+                        </button>
+                    </div>
+                )}
+            </div>
 
             {/* Modal edycji/dodawania użytkownika */}
             {isFormVisible && (
@@ -279,29 +623,6 @@ const AdminPanel = () => {
                     </div>
                 </div>
             )}
-
-            <table className="data-table">
-                <thead>
-                <tr>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Akcje</th>
-                </tr>
-                </thead>
-                <tbody>
-                {users.map(user => (
-                    <tr key={user.id}>
-                        <td>{user.email}</td>
-                        <td>{user.roles.join(', ') || 'Brak'}</td>
-                        <td>
-                            <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(user)} style={{ marginRight: '0.5rem' }}>✏️ Edytuj</button>
-                            <button className="btn btn-warning btn-sm" onClick={() => handleResetPassword(user.id)} style={{ marginRight: '0.5rem' }}>🔑 Reset hasła</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(user.id)}>🗑️ Usuń</button>
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
         </div>
     );
 };
