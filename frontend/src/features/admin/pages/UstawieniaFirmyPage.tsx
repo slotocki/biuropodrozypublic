@@ -91,17 +91,26 @@ const UstawieniaFirmyPage = () => {
 
     return (
         <div className="page-container">
+            {/* Przycisk cofania NAD nagłówkiem */}
+            <div style={{ marginBottom: '1rem' }}>
+                <button 
+                    className="btn btn-secondary" 
+                    onClick={() => navigate('/admin')}
+                    style={{ 
+                        padding: '0.6rem 1.2rem',
+                        borderRadius: '6px',
+                        fontSize: '0.95rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                    }}
+                >
+                    ← Panel administracyjny
+                </button>
+            </div>
+
             <header className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button 
-                        className="btn btn-secondary" 
-                        onClick={() => navigate('/admin')}
-                        style={{ padding: '0.5rem 1rem' }}
-                    >
-                        ← Wstecz
-                    </button>
-                    <h1>🏢 Dane Firmy</h1>
-                </div>
+                <h1 style={{ margin: 0 }}>🏢 Dane Firmy</h1>
             </header>
 
             <div style={{

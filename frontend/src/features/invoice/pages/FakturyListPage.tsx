@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '@/common/api/apiClient';
 import { useNotification } from '@/common/context/NotificationContext';
@@ -19,6 +19,9 @@ interface Faktura {
 
 type SortField = 'numerFaktury' | 'dataWystawienia' | 'nazwaKontrahenta' | 'kwotaBrutto';
 type SortOrder = 'asc' | 'desc';
+type DateFilter = '' | 'today' | 'thisWeek' | 'lastWeek' | 'lastMonth' | 'lastYear';
+
+const ROWS_OPTIONS = [10, 25, 50, 100];
 
 const FakturyListPage = () => {
     const navigate = useNavigate();
@@ -31,6 +34,11 @@ const FakturyListPage = () => {
     const [sortField, setSortField] = useState<SortField>('dataWystawienia');
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
     const [filterKontrahent, setFilterKontrahent] = useState('');
+    const [filterDate, setFilterDate] = useState<DateFilter>('');
+    
+    // Paginacja
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const fetchFaktury = useCallback(async () => {
         setLoading(true);
@@ -64,8 +72,58 @@ const FakturyListPage = () => {
         }
     };
 
-    const sortedFaktury = React.useMemo(() => {
-        const sorted = [...faktury].sort((a, b) => {
+    // Filtrowanie po dacie
+    const getDateRange = (filter: DateFilter): { start: Date; end: Date } | null => {
+        if (!filter) return null;
+        
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        switch (filter) {
+            case 'today':
+                return { start: today, end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1) };
+            case 'thisWeek': {
+                const dayOfWeek = today.getDay();
+                const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                const monday = new Date(today.getTime() + mondayOffset * 24 * 60 * 60 * 1000);
+                const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000 - 1);
+                return { start: monday, end: sunday };
+            }
+            case 'lastWeek': {
+                const dayOfWeek = today.getDay();
+                const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                const thisMonday = new Date(today.getTime() + mondayOffset * 24 * 60 * 60 * 1000);
+                const lastMonday = new Date(thisMonday.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const lastSunday = new Date(lastMonday.getTime() + 6 * 24 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000 - 1);
+                return { start: lastMonday, end: lastSunday };
+            }
+            case 'lastMonth': {
+                const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                return { start: firstDayLastMonth, end: lastDayLastMonth };
+            }
+            case 'lastYear': {
+                const firstDayLastYear = new Date(now.getFullYear() - 1, 0, 1);
+                const lastDayLastYear = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59);
+                return { start: firstDayLastYear, end: lastDayLastYear };
+            }
+            default:
+                return null;
+        }
+    };
+
+    const filteredByDateFaktury = useMemo(() => {
+        const dateRange = getDateRange(filterDate);
+        if (!dateRange) return faktury;
+        
+        return faktury.filter(f => {
+            const date = new Date(f.dataWystawienia);
+            return date >= dateRange.start && date <= dateRange.end;
+        });
+    }, [faktury, filterDate]);
+
+    const sortedFaktury = useMemo(() => {
+        const sorted = [...filteredByDateFaktury].sort((a, b) => {
             let aValue: any = a[sortField];
             let bValue: any = b[sortField];
 
@@ -96,7 +154,7 @@ const FakturyListPage = () => {
             return 0;
         });
         return sorted;
-    }, [faktury, sortField, sortOrder]);
+    }, [filteredByDateFaktury, sortField, sortOrder]);
 
     const getSortIcon = (field: SortField) => {
         if (sortField !== field) return ' ⇅';
@@ -219,6 +277,25 @@ const FakturyListPage = () => {
         }
     };
 
+    // Paginacja
+    const paginatedFaktury = useMemo(() => {
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        return sortedFaktury.slice(start, end);
+    }, [sortedFaktury, currentPage, rowsPerPage]);
+
+    const totalPages = Math.ceil(sortedFaktury.length / rowsPerPage);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage < 1 || newPage > totalPages) return;
+        setCurrentPage(newPage);
+    };
+
+    const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setRowsPerPage(Number(e.target.value));
+        setCurrentPage(1);
+    };
+
     if (loading) return <p className="loading-text">Ładowanie faktur...</p>;
     if (error) return <p className="error-text">{error}</p>;
 
@@ -227,73 +304,39 @@ const FakturyListPage = () => {
             <header className="page-header">
                 <h1>Faktury VAT</h1>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                    {/* Filtr po kontrahentach */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <input
-                            type="text"
-                            placeholder="🔍 Filtruj po kontrahentach..."
-                            value={filterKontrahent}
-                            onChange={(e) => setFilterKontrahent(e.target.value)}
-                            style={{
-                                padding: '0.5rem 1rem',
-                                borderRadius: '6px',
-                                border: '1px solid #4a5568',
-                                backgroundColor: '#2d3748',
-                                color: '#fff',
-                                minWidth: '220px',
-                                fontSize: '0.9rem'
-                            }}
-                        />
-                        {filterKontrahent && (
+                    {/* Przyciski akcji - widoczne tylko gdy wybrano faktury */}
+                    {selectedIds.length > 0 && (
+                        <>
                             <button
-                                onClick={() => setFilterKontrahent('')}
-                                style={{
-                                    padding: '0.5rem 0.75rem',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    backgroundColor: '#4a5568',
-                                    color: '#fff',
-                                    cursor: 'pointer',
-                                    fontSize: '0.9rem'
-                                }}
-                                title="Wyczyść filtr"
+                                className="btn btn-secondary"
+                                onClick={handleViewPdf}
+                                disabled={selectedIds.length !== 1}
+                                style={{ opacity: selectedIds.length !== 1 ? 0.5 : 1 }}
                             >
-                                ✕
+                                📄 PDF
                             </button>
-                        )}
-                    </div>
-                    <button
-                        className="btn btn-secondary"
-                        onClick={handleViewPdf}
-                        disabled={selectedIds.length !== 1}
-                        style={{ opacity: selectedIds.length !== 1 ? 0.5 : 1 }}
-                    >
-                        📄 PDF
-                    </button>
-                    <button
-                        className="btn btn-secondary"
-                        onClick={handleEdit}
-                        disabled={selectedIds.length !== 1}
-                        style={{ opacity: selectedIds.length !== 1 ? 0.5 : 1 }}
-                    >
-                        📝 Wystaw korektę
-                    </button>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => setShowEmailModal(true)}
-                        disabled={selectedIds.length === 0}
-                        style={{ opacity: selectedIds.length === 0 ? 0.5 : 1 }}
-                    >
-                        📧 Wyślij email ({selectedIds.length})
-                    </button>
-                    <button
-                        className="btn btn-danger"
-                        onClick={handleDelete}
-                        disabled={selectedIds.length === 0}
-                        style={{ opacity: selectedIds.length === 0 ? 0.5 : 1 }}
-                    >
-                        🗑️ Usuń ({selectedIds.length})
-                    </button>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={handleEdit}
+                                disabled={selectedIds.length !== 1}
+                                style={{ opacity: selectedIds.length !== 1 ? 0.5 : 1 }}
+                            >
+                                📝 Wystaw korektę
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setShowEmailModal(true)}
+                            >
+                                📧 Wyślij email ({selectedIds.length})
+                            </button>
+                            <button
+                                className="btn btn-danger"
+                                onClick={handleDelete}
+                            >
+                                🗑️ Usuń ({selectedIds.length})
+                            </button>
+                        </>
+                    )}
                     <Link to="/faktury/nowa" className="btn btn-primary">
                         ➕ Wystaw nową fakturę
                     </Link>
@@ -307,110 +350,342 @@ const FakturyListPage = () => {
                 </div>
             </header>
 
-            <table className="data-table">
-                <thead>
-                <tr>
-                    <th style={{ width: '50px' }}>
-                        <input
-                            type="checkbox"
-                            onChange={(e) => toggleSelectAll(e.target.checked)}
-                            checked={selectedIds.length === faktury.length && faktury.length > 0}
-                        />
-                    </th>
-                    <th
-                        onClick={() => handleSort('numerFaktury')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                    >
-                        Numer Faktury{getSortIcon('numerFaktury')}
-                    </th>
-                    <th
-                        onClick={() => handleSort('dataWystawienia')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                    >
-                        Data Wystawienia{getSortIcon('dataWystawienia')}
-                    </th>
-                    <th
-                        onClick={() => handleSort('nazwaKontrahenta')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                    >
-                        Kontrahent{getSortIcon('nazwaKontrahenta')}
-                    </th>
-                    <th
-                        onClick={() => handleSort('kwotaBrutto')}
-                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                    >
-                        Kwota Brutto{getSortIcon('kwotaBrutto')}
-                    </th>
-                    <th>Typ</th>
-                    <th>Koryguje</th>
-                </tr>
-                </thead>
-                <tbody>
-                {sortedFaktury.length === 0 ? (
-                    <tr>
-                        <td colSpan={7}>{filterKontrahent ? 'Brak faktur dla podanego kontrahenta.' : 'Brak wystawionych faktur.'}</td>
-                    </tr>
-                ) : (
-                    sortedFaktury.map((faktura) => {
-                        const isKorekta = faktura.typDokumentu === 'KOREKTA';
-                        return (
-                            <tr
-                                key={faktura.idFaktura}
-                                style={{
-                                    backgroundColor: selectedIds.includes(faktura.idFaktura) 
-                                        ? '#4a5568' 
-                                        : isKorekta 
-                                            ? 'rgba(239, 68, 68, 0.1)' 
-                                            : 'transparent',
-                                    cursor: 'pointer'
+            <div style={{
+                marginTop: '1rem',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+                borderRadius: '8px',
+                overflow: 'hidden'
+            }}>
+                <table style={{ 
+                    width: '100%', 
+                    borderCollapse: 'collapse',
+                    backgroundColor: '#1e2533'
+                }}>
+                    <thead>
+                        <tr style={{ backgroundColor: '#2d3748' }}>
+                            <th style={{ 
+                                width: '50px', 
+                                padding: '0.75rem',
+                                borderBottom: '1px solid #4a5568',
+                                color: '#e2e8f0',
+                                textAlign: 'left'
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    onChange={(e) => toggleSelectAll(e.target.checked)}
+                                    checked={selectedIds.length === paginatedFaktury.length && paginatedFaktury.length > 0}
+                                />
+                            </th>
+                            <th
+                                onClick={() => handleSort('numerFaktury')}
+                                style={{ 
+                                    cursor: 'pointer', 
+                                    userSelect: 'none',
+                                    padding: '0.75rem',
+                                    borderBottom: '1px solid #4a5568',
+                                    color: '#e2e8f0',
+                                    textAlign: 'left',
+                                    whiteSpace: 'nowrap'
                                 }}
-                                onClick={() => toggleSelect(faktura.idFaktura)}
                             >
-                                <td onClick={(e) => e.stopPropagation()}>
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedIds.includes(faktura.idFaktura)}
-                                        onChange={() => toggleSelect(faktura.idFaktura)}
-                                    />
-                                </td>
-                                <td>{faktura.numerFaktury}</td>
-                                <td>{new Date(faktura.dataWystawienia).toLocaleDateString()}</td>
-                                <td>{faktura.nazwaKontrahenta}</td>
-                                <td style={{ color: faktura.kwotaBrutto < 0 ? '#ef4444' : 'inherit' }}>
-                                    {faktura.kwotaBrutto.toFixed(2)} zł
-                                </td>
-                                <td>
-                                    <span style={{
-                                        padding: '2px 8px',
-                                        borderRadius: '4px',
-                                        fontSize: '0.85em',
-                                        backgroundColor: isKorekta ? '#fee2e2' : '#d1fae5',
-                                        color: isKorekta ? '#dc2626' : '#059669'
-                                    }}>
-                                        {faktura.typDokumentu || 'FAKTURA'}
+                                Numer{getSortIcon('numerFaktury')}
+                            </th>
+                            <th style={{ 
+                                padding: '0.75rem',
+                                borderBottom: '1px solid #4a5568',
+                                color: '#e2e8f0',
+                                textAlign: 'left',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <span
+                                        onClick={() => handleSort('dataWystawienia')}
+                                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                                    >
+                                        Data{getSortIcon('dataWystawienia')}
                                     </span>
-                                </td>
-                                <td>
-                                    {isKorekta && faktura.numerFakturyOryginalnej ? (
+                                    <select
+                                        value={filterDate}
+                                        onChange={(e) => { setFilterDate(e.target.value as DateFilter); setCurrentPage(1); }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        style={{
+                                            padding: '0.25rem 0.5rem',
+                                            borderRadius: '4px',
+                                            border: '1px solid #4a5568',
+                                            backgroundColor: '#1a202c',
+                                            color: '#fff',
+                                            fontSize: '0.75rem',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <option value="">Wszystkie</option>
+                                        <option value="today">Dziś</option>
+                                        <option value="thisWeek">Ten tydzień</option>
+                                        <option value="lastWeek">Poprzedni tydzień</option>
+                                        <option value="lastMonth">Poprzedni miesiąc</option>
+                                        <option value="lastYear">Poprzedni rok</option>
+                                    </select>
+                                </div>
+                            </th>
+                            <th style={{ 
+                                padding: '0.75rem',
+                                borderBottom: '1px solid #4a5568',
+                                color: '#e2e8f0',
+                                textAlign: 'left',
+                                minWidth: '220px'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <span
+                                        onClick={() => handleSort('nazwaKontrahenta')}
+                                        style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                                    >
+                                        Kontrahent{getSortIcon('nazwaKontrahenta')}
+                                    </span>
+                                    <input
+                                        type="text"
+                                        placeholder="🔍 Filtruj..."
+                                        value={filterKontrahent}
+                                        onChange={(e) => { setFilterKontrahent(e.target.value); setCurrentPage(1); }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        style={{
+                                            padding: '0.25rem 0.5rem',
+                                            borderRadius: '4px',
+                                            border: '1px solid #4a5568',
+                                            backgroundColor: '#1a202c',
+                                            color: '#fff',
+                                            fontSize: '0.75rem',
+                                            width: '120px'
+                                        }}
+                                    />
+                                    {filterKontrahent && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setFilterKontrahent(''); setCurrentPage(1); }}
+                                            style={{
+                                                padding: '0.2rem 0.4rem',
+                                                borderRadius: '4px',
+                                                border: 'none',
+                                                backgroundColor: '#4a5568',
+                                                color: '#fff',
+                                                cursor: 'pointer',
+                                                fontSize: '0.7rem'
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                            </th>
+                            <th
+                                onClick={() => handleSort('kwotaBrutto')}
+                                style={{ 
+                                    cursor: 'pointer', 
+                                    userSelect: 'none',
+                                    padding: '0.75rem',
+                                    borderBottom: '1px solid #4a5568',
+                                    color: '#e2e8f0',
+                                    textAlign: 'left',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                Brutto{getSortIcon('kwotaBrutto')}
+                            </th>
+                            <th style={{ 
+                                padding: '0.75rem',
+                                borderBottom: '1px solid #4a5568',
+                                color: '#e2e8f0',
+                                textAlign: 'left',
+                                whiteSpace: 'nowrap'
+                            }}>Typ</th>
+                            <th style={{ 
+                                padding: '0.75rem',
+                                borderBottom: '1px solid #4a5568',
+                                color: '#e2e8f0',
+                                textAlign: 'left',
+                                whiteSpace: 'nowrap'
+                            }}>Koryguje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {paginatedFaktury.length === 0 ? (
+                        <tr>
+                            <td colSpan={7} style={{ 
+                                padding: '2rem', 
+                                textAlign: 'center', 
+                                color: '#a0aec0' 
+                            }}>
+                                {filterKontrahent || filterDate ? 'Brak faktur dla podanych kryteriów.' : 'Brak wystawionych faktur.'}
+                            </td>
+                        </tr>
+                    ) : (
+                        paginatedFaktury.map((faktura, index) => {
+                            const isKorekta = faktura.typDokumentu === 'KOREKTA';
+                            const isSelected = selectedIds.includes(faktura.idFaktura);
+                            const rowBg = isSelected 
+                                ? '#4a5568' 
+                                : isKorekta 
+                                    ? 'rgba(239, 68, 68, 0.08)' 
+                                    : index % 2 === 0 
+                                        ? '#1e2533' 
+                                        : '#252d3d';
+                            return (
+                                <tr
+                                    key={faktura.idFaktura}
+                                    style={{
+                                        backgroundColor: rowBg,
+                                        cursor: 'pointer',
+                                        transition: 'background-color 0.15s ease'
+                                    }}
+                                    onClick={() => toggleSelect(faktura.idFaktura)}
+                                    onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#3a4556'; }}
+                                    onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = rowBg; }}
+                                >
+                                    <td style={{ padding: '0.6rem 0.75rem' }} onClick={(e) => e.stopPropagation()}>
+                                        <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={() => toggleSelect(faktura.idFaktura)}
+                                        />
+                                    </td>
+                                    <td style={{ padding: '0.6rem 0.75rem', color: '#e2e8f0' }}>{faktura.numerFaktury}</td>
+                                    <td style={{ padding: '0.6rem 0.75rem', color: '#e2e8f0' }}>{new Date(faktura.dataWystawienia).toLocaleDateString()}</td>
+                                    <td style={{ padding: '0.6rem 0.75rem', color: '#e2e8f0' }}>{faktura.nazwaKontrahenta}</td>
+                                    <td style={{ padding: '0.6rem 0.75rem', color: faktura.kwotaBrutto < 0 ? '#ef4444' : '#e2e8f0' }}>
+                                        {faktura.kwotaBrutto.toFixed(2)} zł
+                                    </td>
+                                    <td style={{ padding: '0.6rem 0.75rem' }}>
                                         <span style={{
                                             padding: '2px 8px',
                                             borderRadius: '4px',
-                                            fontSize: '0.85em',
-                                            backgroundColor: '#fef3c7',
-                                            color: '#92400e'
+                                            fontSize: '0.8em',
+                                            backgroundColor: isKorekta ? '#fee2e2' : '#d1fae5',
+                                            color: isKorekta ? '#dc2626' : '#059669'
                                         }}>
-                                            {faktura.numerFakturyOryginalnej}
+                                            {faktura.typDokumentu || 'FAKTURA'}
                                         </span>
-                                    ) : (
-                                        <span style={{ color: '#6b7280' }}>—</span>
-                                    )}
-                                </td>
-                            </tr>
-                        );
-                    })
+                                    </td>
+                                    <td style={{ padding: '0.6rem 0.75rem' }}>
+                                        {isKorekta && faktura.numerFakturyOryginalnej ? (
+                                            <span style={{
+                                                padding: '2px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '0.8em',
+                                                backgroundColor: '#fef3c7',
+                                                color: '#92400e'
+                                            }}>
+                                                {faktura.numerFakturyOryginalnej}
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: '#6b7280' }}>—</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Paginacja na dole */}
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginTop: '1rem',
+                padding: '0.75rem 0',
+                color: '#a0aec0',
+                fontSize: '0.9rem'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>Pokaż</span>
+                    <select
+                        value={rowsPerPage}
+                        onChange={handleRowsPerPageChange}
+                        style={{
+                            padding: '0.35rem 0.5rem',
+                            borderRadius: '4px',
+                            border: '1px solid #4a5568',
+                            backgroundColor: '#2d3748',
+                            color: '#fff',
+                            fontSize: '0.85rem',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        {ROWS_OPTIONS.map(option => (
+                            <option key={option} value={option}>{option}</option>
+                        ))}
+                    </select>
+                    <span>z {sortedFaktury.length} faktur</span>
+                </div>
+                
+                {totalPages > 1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <button
+                            onClick={() => handlePageChange(1)}
+                            disabled={currentPage === 1}
+                            style={{
+                                padding: '0.4rem 0.6rem',
+                                borderRadius: '4px',
+                                border: 'none',
+                                backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
+                                color: currentPage === 1 ? '#6b7280' : '#fff',
+                                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                                fontSize: '0.85rem'
+                            }}
+                        >
+                            ««
+                        </button>
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            style={{
+                                padding: '0.4rem 0.6rem',
+                                borderRadius: '4px',
+                                border: 'none',
+                                backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
+                                color: currentPage === 1 ? '#6b7280' : '#fff',
+                                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                                fontSize: '0.85rem'
+                            }}
+                        >
+                            «
+                        </button>
+                        <span style={{ padding: '0 0.5rem', color: '#e2e8f0' }}>
+                            Strona {currentPage} z {totalPages}
+                        </span>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            style={{
+                                padding: '0.4rem 0.6rem',
+                                borderRadius: '4px',
+                                border: 'none',
+                                backgroundColor: currentPage === totalPages ? '#374151' : '#4a5568',
+                                color: currentPage === totalPages ? '#6b7280' : '#fff',
+                                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                                fontSize: '0.85rem'
+                            }}
+                        >
+                            »
+                        </button>
+                        <button
+                            onClick={() => handlePageChange(totalPages)}
+                            disabled={currentPage === totalPages}
+                            style={{
+                                padding: '0.4rem 0.6rem',
+                                borderRadius: '4px',
+                                border: 'none',
+                                backgroundColor: currentPage === totalPages ? '#374151' : '#4a5568',
+                                color: currentPage === totalPages ? '#6b7280' : '#fff',
+                                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                                fontSize: '0.85rem'
+                            }}
+                        >
+                            »»
+                        </button>
+                    </div>
                 )}
-                </tbody>
-            </table>
+            </div>
 
             {showEmailModal && (
                 <WyslijEmailModal
