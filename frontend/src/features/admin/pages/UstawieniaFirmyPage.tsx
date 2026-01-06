@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '@/common/api/apiClient';
 import { useNotification } from '@/common/context/NotificationContext';
@@ -20,6 +20,9 @@ const UstawieniaFirmyPage = () => {
     const { showToast } = useNotification();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+    const [logoUrl, setLogoUrl] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [settings, setSettings] = useState<FirmSettings>({
         nazwaFirmy: '',
         adres: '',
@@ -34,7 +37,7 @@ const UstawieniaFirmyPage = () => {
     const fetchSettings = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await apiClient.get('/api/admin/firm-settings');
+            const response = await apiClient.get('/api/FirmSettings');
             setSettings(response.data);
         } catch (error: any) {
             console.error('Błąd podczas pobierania ustawień:', error);
@@ -49,9 +52,22 @@ const UstawieniaFirmyPage = () => {
         }
     }, [navigate, showToast]);
 
+    const fetchLogo = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/api/FirmSettings/logo', {
+                responseType: 'blob'
+            });
+            const url = URL.createObjectURL(response.data);
+            setLogoUrl(url);
+        } catch {
+            setLogoUrl(null);
+        }
+    }, []);
+
     useEffect(() => {
         fetchSettings();
-    }, [fetchSettings]);
+        fetchLogo();
+    }, [fetchSettings, fetchLogo]);
 
     const handleChange = (field: keyof FirmSettings, value: string) => {
         setSettings(prev => ({ ...prev, [field]: value }));
@@ -67,8 +83,7 @@ const UstawieniaFirmyPage = () => {
 
         try {
             setSaving(true);
-            const response = await apiClient.put('/api/admin/firm-settings', settings);
-            // Użyj danych zwróconych z serwera (są aktualne)
+            const response = await apiClient.put('/api/FirmSettings', settings);
             if (response.data && response.data.nazwaFirmy !== undefined) {
                 setSettings(response.data);
             }
@@ -78,6 +93,30 @@ const UstawieniaFirmyPage = () => {
             showToast(error.response?.data?.message || 'Błąd podczas zapisywania ustawień', 'error');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('logo', file);
+
+        try {
+            setUploadingLogo(true);
+            await apiClient.post('/api/FirmSettings/upload-logo', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            showToast('Logo zostało zaktualizowane (przeskalowane do 428×261 px)', 'success');
+            fetchLogo();
+        } catch (error: any) {
+            showToast(error.response?.data?.message || 'Błąd podczas uploadu logo', 'error');
+        } finally {
+            setUploadingLogo(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         }
     };
 
@@ -110,7 +149,7 @@ const UstawieniaFirmyPage = () => {
             </div>
 
             <header className="page-header">
-                <h1 style={{ margin: 0 }}>🏢 Dane Firmy</h1>
+                <h1 style={{ margin: 0 }}>Dane Firmy</h1>
             </header>
 
             <div style={{
@@ -126,6 +165,56 @@ const UstawieniaFirmyPage = () => {
                 }}>
                     Dane wprowadzone poniżej będą widoczne na wszystkich wystawianych fakturach VAT oraz fakturach korygujących.
                 </p>
+
+                {/* Sekcja Logo */}
+                <div style={{ 
+                    marginBottom: '2rem', 
+                    padding: '1.5rem', 
+                    backgroundColor: '#1a202c', 
+                    borderRadius: '8px',
+                    border: '1px solid #4a5568'
+                }}>
+                    <h3 style={{ color: '#e2e8f0', margin: '0 0 1rem 0' }}>Logo firmy</h3>
+                    <p style={{ color: '#a0aec0', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                        Logo będzie automatycznie przeskalowane do rozmiaru 428×261 px z zachowaniem proporcji.
+                    </p>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                        {logoUrl && (
+                            <div style={{ 
+                                border: '1px solid #4a5568', 
+                                borderRadius: '8px', 
+                                padding: '0.5rem',
+                                backgroundColor: '#fff'
+                            }}>
+                                <img 
+                                    src={logoUrl} 
+                                    alt="Logo firmy" 
+                                    style={{ maxWidth: '214px', maxHeight: '130px', display: 'block' }}
+                                />
+                            </div>
+                        )}
+                        
+                        <div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".png,.jpg,.jpeg"
+                                onChange={handleLogoUpload}
+                                style={{ display: 'none' }}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={uploadingLogo}
+                                style={{ padding: '0.6rem 1.2rem' }}
+                            >
+                                {uploadingLogo ? '⏳ Przesyłanie...' : '📤 Zmień logo'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ display: 'grid', gap: '1.5rem' }}>
@@ -281,7 +370,7 @@ const UstawieniaFirmyPage = () => {
                         {/* Email księgowości */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             <label style={{ color: '#e2e8f0', fontWeight: 500 }}>
-                                📧 Email księgowości (do wysyłki raportów)
+                                Email księgowości (do wysyłki raportów)
                             </label>
                             <input
                                 type="email"
@@ -320,7 +409,7 @@ const UstawieniaFirmyPage = () => {
                                 opacity: saving ? 0.7 : 1
                             }}
                         >
-                            {saving ? '💾 Zapisywanie...' : '💾 Zapisz ustawienia'}
+                            {saving ? 'Zapisywanie...' : 'Zapisz ustawienia'}
                         </button>
                         <button
                             type="button"
@@ -328,32 +417,10 @@ const UstawieniaFirmyPage = () => {
                             onClick={fetchSettings}
                             disabled={saving}
                         >
-                            🔄 Przywróć zapisane
+                            Przywróć zapisane
                         </button>
                     </div>
                 </form>
-
-                {/* Informacja o logo */}
-                <div style={{
-                    marginTop: '2rem',
-                    padding: '1rem',
-                    backgroundColor: '#1a202c',
-                    borderRadius: '8px',
-                    border: '1px solid #4a5568'
-                }}>
-                    <h4 style={{ color: '#e2e8f0', margin: '0 0 0.5rem 0' }}>
-                        📷 Logo firmy
-                    </h4>
-                    <p style={{ color: '#a0aec0', margin: 0, fontSize: '0.9rem' }}>
-                        Logo firmy widoczne na fakturach znajduje się w pliku <code style={{ 
-                            backgroundColor: '#2d3748', 
-                            padding: '2px 6px', 
-                            borderRadius: '4px',
-                            color: '#4299e1'
-                        }}>Resources/logo.png</code> na serwerze.
-                        Aby zmienić logo, podmień ten plik zachowując tę samą nazwę.
-                    </p>
-                </div>
             </div>
         </div>
     );

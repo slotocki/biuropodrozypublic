@@ -32,6 +32,7 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
     .AddEntityFrameworkStores<IdenQtityDQataContQext>();
 
 builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<IFirmSettingsService, FirmSettingsService>();
 
 // Konfiguracja CORS
 builder.Services.AddCors(options =>

@@ -86,7 +86,7 @@ public partial class BiuroDbContext : DbContext
     public virtual DbSet<Wyzywienie> Wyzywienies { get; set; }
 
     public virtual DbSet<Zdjecium> Zdjecia { get; set; }
-
+    public virtual DbSet<FirmSettings> FirmSettings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -103,6 +103,20 @@ public partial class BiuroDbContext : DbContext
             entity.Property(e => e.NormalizedName).HasMaxLength(256);
         });
 
+        modelBuilder.Entity<FirmSettings>(entity =>
+        {
+            entity.ToTable("FirmSettings");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.NazwaFirmy).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Adres).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.NIP).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Telefon).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Bank).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.NumerKonta).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.MiejsceWystawienia).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.EmailKsiegowosci).IsRequired().HasMaxLength(255);
+        });
+        
         modelBuilder.Entity<AspNetRoleClaim>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");

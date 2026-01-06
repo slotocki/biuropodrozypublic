@@ -1,10 +1,11 @@
 using BiuroTurystyczne1.Data.Models;
 using BiuroTurystyczne1.Infrastructure.Documents;
+using BiuroTurystyczne1.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
-
+using DocumentFirmSettings = BiuroTurystyczne1.Infrastructure.Documents.FirmSettings;
 namespace BiuroTurystyczne1.Controllers.invoice_vat;
 
 [ApiController]
@@ -14,26 +15,18 @@ public class RaportyController : ControllerBase
 {
     private readonly BiuroDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly IFirmSettingsService _firmSettingsService;
 
-    public RaportyController(BiuroDbContext context, IConfiguration configuration)
+    public RaportyController(BiuroDbContext context, IConfiguration configuration, IFirmSettingsService firmSettingsService)
     {
         _context = context;
         _configuration = configuration;
+        _firmSettingsService = firmSettingsService;
     }
 
-    private FirmSettings GetFirmSettings()
+    private async Task<DocumentFirmSettings> GetFirmSettingsAsync()
     {
-        return new FirmSettings
-        {
-            NazwaFirmy = _configuration["FirmSettings:NazwaFirmy"] ?? "NAUCZYCIELSKIE BIURO TURYSTYCZNE \"BELFEREK\" EWA KUSTRA",
-            Adres = _configuration["FirmSettings:Adres"] ?? "al. Juliusza Słowackiego 52, 30-018 Kraków",
-            NIP = _configuration["FirmSettings:NIP"] ?? "677 129 04 82",
-            Telefon = _configuration["FirmSettings:Telefon"] ?? "+48 575 550 302",
-            Bank = _configuration["FirmSettings:Bank"] ?? "SANTANDER BANK POLSKA S.A",
-            NumerKonta = _configuration["FirmSettings:NumerKonta"] ?? "24 1090 2053 0000 0001 1444 5232",
-            MiejsceWystawienia = _configuration["FirmSettings:MiejsceWystawienia"] ?? "KRAKÓW",
-            LogoPath = _configuration["FirmSettings:LogoPath"]
-        };
+        return await _firmSettingsService.GetDocumentFirmSettingsAsync();
     }
 
     /// <summary>
@@ -184,7 +177,7 @@ public class RaportyController : ControllerBase
             .OrderBy(f => f.DataWystawienia)
             .ToListAsync();
 
-        var firmSettings = GetFirmSettings();
+        var firmSettings = await GetFirmSettingsAsync();
         var document = new RaportMiesiecznyDocument(faktury, rok, miesiac, firmSettings);
         var pdfBytes = document.GeneratePdf();
 
@@ -201,12 +194,20 @@ public class RaportyController : ControllerBase
         if (miesiac < 1 || miesiac > 12)
             return BadRequest(new { message = "Nieprawidłowy miesiąc" });
 
-        var emailKsiegowosci = _configuration["FirmSettings:EmailKsiegowosci"] 
-            ?? _configuration["EmailSettings:SenderEmail"];
+        // Pobierz email księgowości z bazy danych
+        var firmSettings = await _context.FirmSettings.FirstOrDefaultAsync();
+        var emailKsiegowosci = firmSettings?.EmailKsiegowosci;
+
+        // Jeśli brak w bazie, użyj fallback z konfiguracji
+        if (string.IsNullOrEmpty(emailKsiegowosci))
+        {
+            emailKsiegowosci = _configuration["FirmSettings:EmailKsiegowosci"] 
+                ?? _configuration["EmailSettings:SenderEmail"];
+        }
 
         if (string.IsNullOrEmpty(emailKsiegowosci))
         {
-            return BadRequest(new { message = "Brak skonfigurowanego adresu email księgowości" });
+            return BadRequest(new { message = "Brak skonfigurowanego adresu email księgowości. Ustaw go w Ustawieniach Firmy." });
         }
 
         var startDate = new DateOnly(rok, miesiac, 1);
@@ -219,6 +220,11 @@ public class RaportyController : ControllerBase
             .OrderBy(f => f.DataWystawienia)
             .ToListAsync();
 
+        if (!faktury.Any())
+        {
+            return BadRequest(new { message = "Brak faktur w wybranym okresie" });
+        }
+
         // Oblicz statystyki
         var sumaNetto = faktury.Sum(f => f.KwotaNetto);
         var sumaVat = faktury.Sum(f => f.KwotaVat);
@@ -227,8 +233,8 @@ public class RaportyController : ControllerBase
         var liczbaKorekt = faktury.Count(f => f.TypDokumentu == "KOREKTA");
 
         // Generuj PDF
-        var firmSettings = GetFirmSettings();
-        var document = new RaportMiesiecznyDocument(faktury, rok, miesiac, firmSettings);
+        var documentFirmSettings = await GetFirmSettingsAsync();
+        var document = new RaportMiesiecznyDocument(faktury, rok, miesiac, documentFirmSettings);
         var pdfBytes = document.GeneratePdf();
 
         // Wyślij email
@@ -281,7 +287,7 @@ public class RaportyController : ControllerBase
                         </table>
                         
                         <p style='margin-top: 20px; color: #666;'>
-                            Wiadomość wygenerowana automatycznie przez system {firmSettings.NazwaFirmy}
+                            Wiadomość wygenerowana automatycznie przez system {documentFirmSettings.NazwaFirmy}
                         </p>
                     </body>
                     </html>"
@@ -375,4 +381,3 @@ public class FakturaRaportDto
     public decimal KwotaBrutto { get; set; }
     public string TypDokumentu { get; set; } = "";
 }
-

@@ -5,8 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using BiuroTurystyczne1.Infrastructure.Documents;
+using BiuroTurystyczne1.Services;
 using QuestPDF.Fluent;
-
+using DocumentFirmSettings = BiuroTurystyczne1.Infrastructure.Documents.FirmSettings;
 namespace BiuroTurystyczne1.Controllers.invoice_vat;
 
 [ApiController]
@@ -17,15 +18,18 @@ public class FakturyVatController : ControllerBase
     private readonly BiuroDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly IFirmSettingsService _firmSettingsService;
 
     public FakturyVatController(
         BiuroDbContext context, 
         UserManager<IdentityUser> userManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IFirmSettingsService firmSettingsService)
     {
         _context = context;
         _userManager = userManager;
         _configuration = configuration;
+        _firmSettingsService = firmSettingsService;
     }
     
     private string GetGeneratedFolderPath()
@@ -34,19 +38,9 @@ public class FakturyVatController : ControllerBase
         return Path.Combine(Directory.GetCurrentDirectory(), generatedPath);
     }
     
-    private FirmSettings GetFirmSettings()
+    private async Task<DocumentFirmSettings> GetFirmSettingsAsync()
     {
-        return new FirmSettings
-        {
-            NazwaFirmy = _configuration["FirmSettings:NazwaFirmy"] ?? "NAUCZYCIELSKIE BIURO TURYSTYCZNE \"BELFEREK\" EWA KUSTRA",
-            Adres = _configuration["FirmSettings:Adres"] ?? "al. Juliusza Słowackiego 52, 30-018 Kraków",
-            NIP = _configuration["FirmSettings:NIP"] ?? "677 129 04 82",
-            Telefon = _configuration["FirmSettings:Telefon"] ?? "+48 575 550 302",
-            Bank = _configuration["FirmSettings:Bank"] ?? "SANTANDER BANK POLSKA S.A",
-            NumerKonta = _configuration["FirmSettings:NumerKonta"] ?? "24 1090 2053 0000 0001 1444 5232",
-            MiejsceWystawienia = _configuration["FirmSettings:MiejsceWystawienia"] ?? "KRAKÓW",
-            LogoPath = _configuration["FirmSettings:LogoPath"]
-        };
+        return await _firmSettingsService.GetDocumentFirmSettingsAsync();
     }
     
     [HttpGet]
@@ -222,7 +216,7 @@ public class FakturyVatController : ControllerBase
                     }
                     
                     var wystawiajacyTemp = new Uzytkownik { Login = wystawiajacyNazwa };
-                    var document = new FakturaVatDocument(fakturaDoPdf, wystawiajacyTemp, GetFirmSettings());
+                    var document = new FakturaVatDocument(fakturaDoPdf, wystawiajacyTemp, await GetFirmSettingsAsync());
                     var pdfBytes = document.GeneratePdf();
                     
                     var fileName = $"faktura-{fakturaDoPdf.NumerFaktury.Replace('/', '_')}.pdf";
@@ -387,26 +381,26 @@ public class FakturyVatController : ControllerBase
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            var stараFaktura = await _context.FakturaVats
+            var staraFaktura = await _context.FakturaVats
                 .Include(f => f.FakturaVatPozycjas)
                 .FirstOrDefaultAsync(f => f.IdFaktura == id);
                 
-            if (stараFaktura == null)
+            if (staraFaktura == null)
             {
                 return NotFound(new { message = "Nie znaleziono faktury do edycji" });
             }
             
-            stараFaktura.CzyAnulowana = true;
+            staraFaktura.CzyAnulowana = true;
             await _context.SaveChangesAsync();
             
-            var oryginalnaFakturaId = stараFaktura.OryginalnaFakturaId ?? stараFaktura.IdFaktura;
+            var oryginalnaFakturaId = staraFaktura.OryginalnaFakturaId ?? staraFaktura.IdFaktura;
             
             var maksymalnaWersja = await _context.FakturaVats
                 .Where(f => f.OryginalnaFakturaId == oryginalnaFakturaId || f.IdFaktura == oryginalnaFakturaId)
                 .MaxAsync(f => (int?)f.Wersja) ?? 1;
             
             var nowaWersja = maksymalnaWersja + 1;
-            var numerBazowy = stараFaktura.NumerFaktury.Split('_')[0];
+            var numerBazowy = staraFaktura.NumerFaktury.Split('_')[0];
             var nowyNumerFaktury = $"{numerBazowy}_{nowaWersja}";
             
             // ⭐ Sprawdzenie NULL
@@ -498,7 +492,7 @@ public class FakturyVatController : ControllerBase
                     };
                     
                     var wystawiajacyTemp = new Uzytkownik { Login = wystawiajacyNazwa };
-                    var document = new FakturaVatDocument(dokumentZOryginalnymNumerem, wystawiajacyTemp, GetFirmSettings());
+                    var document = new FakturaVatDocument(dokumentZOryginalnymNumerem, wystawiajacyTemp, await GetFirmSettingsAsync());
                     var pdfBytes = document.GeneratePdf();
                     
                     var fileName = $"faktura-{nowyNumerFaktury.Replace('/', '_')}.pdf";
@@ -597,7 +591,7 @@ public class FakturyVatController : ControllerBase
             FakturaVatPozycjas = fakturaFull.FakturaVatPozycjas
         };
 
-        var document = new FakturaVatDocument(fakturaDoGenerowania, wystawiajacy, GetFirmSettings());
+        var document = new FakturaVatDocument(fakturaDoGenerowania, wystawiajacy, await GetFirmSettingsAsync());
         var pdfBytesNew = document.GeneratePdf();
         var fileNameNew = $"faktura-{numerBazowy.Replace('/', '_')}.pdf";
 
@@ -806,7 +800,7 @@ public class FakturyVatController : ControllerBase
                     }
                     
                     var wystawiajacyTemp = new Uzytkownik { Login = wystawiajacyNazwa };
-                    var document = new FakturaKorygujacaDocument(korektaDoPdf, oryginalnaFaktura, wystawiajacyTemp, GetFirmSettings());
+                    var document = new FakturaKorygujacaDocument(korektaDoPdf, oryginalnaFaktura, wystawiajacyTemp, await GetFirmSettingsAsync());
                     var pdfBytes = document.GeneratePdf();
                     
                     var fileName = $"korekta-{korektaDoPdf.NumerFaktury.Replace('/', '_')}.pdf";
@@ -897,7 +891,7 @@ public class FakturyVatController : ControllerBase
         
         var wystawiajacy = new Uzytkownik { Login = wystawiajacyNazwa };
 
-        var document = new FakturaKorygujacaDocument(korekta, oryginalnaFaktura, wystawiajacy, GetFirmSettings());
+        var document = new FakturaKorygujacaDocument(korekta, oryginalnaFaktura, wystawiajacy, await GetFirmSettingsAsync());
         var pdfBytesNew = document.GeneratePdf();
         var fileNameNew = $"korekta-{korekta.NumerFaktury.Replace('/', '_')}.pdf";
 
