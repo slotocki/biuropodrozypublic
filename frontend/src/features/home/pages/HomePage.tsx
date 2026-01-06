@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import NotatkiPanel from '@/common/components/NotatkiPanel';
 import styles from './HomePage.module.css';
@@ -41,15 +40,6 @@ const HomePage = () => {
                         <h3 className={styles.tileTitle}>Klienci</h3>
                         <p className={styles.tileDescription}>
                             Baza klientów, rezerwacji i rozliczeń.
-                        </p>
-                        <span className={styles.tileArrow}>→</span>
-                    </Link>
-
-                    <Link to="/ustawienia-firmy" className={`${styles.tile} ${styles.settingsTile}`}>
-                        <div className={styles.tileIcon}>⚙️</div>
-                        <h3 className={styles.tileTitle}>Ustawienia Firmy</h3>
-                        <p className={styles.tileDescription}>
-                            Dane firmy widoczne na fakturach VAT.
                         </p>
                         <span className={styles.tileArrow}>→</span>
                     </Link>

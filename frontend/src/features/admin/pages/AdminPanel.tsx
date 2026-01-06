@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '@/common/api/apiClient';
 import { useNotification } from '@/common/context/NotificationContext';
 import '@/common/styles/PageStyles.css';
@@ -9,6 +10,7 @@ interface User {
 }
 
 const AdminPanel = () => {
+    const navigate = useNavigate();
     const { showToast, showConfirm } = useNotification();
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<string[]>([]);
@@ -122,10 +124,24 @@ const AdminPanel = () => {
     return (
         <div className="page-container">
             <header className="page-header">
-                <h1>👥 Zarządzanie użytkownikami</h1>
-                <button className="btn btn-primary" onClick={handleAddNew}>
-                    ➕ Dodaj użytkownika
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button 
+                        className="btn btn-secondary" 
+                        onClick={() => navigate(-1)}
+                        style={{ padding: '0.5rem 1rem' }}
+                    >
+                        ← Wstecz
+                    </button>
+                    <h1>👥 Panel Administracyjny</h1>
+                </div>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <Link to="/admin/ustawienia-firmy" className="btn btn-secondary">
+                        🏢 Dane firmy
+                    </Link>
+                    <button className="btn btn-primary" onClick={handleAddNew}>
+                        ➕ Dodaj użytkownika
+                    </button>
+                </div>
             </header>
 
             {/* Modal edycji/dodawania użytkownika */}

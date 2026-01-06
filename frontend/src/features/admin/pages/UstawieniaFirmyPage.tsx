@@ -69,6 +69,8 @@ const UstawieniaFirmyPage = () => {
             setSaving(true);
             await apiClient.put('/api/admin/firm-settings', settings);
             showToast('Ustawienia firmy zostały zapisane', 'success');
+            // Ponowne pobranie danych po zapisie - naprawia problem z wyświetlaniem
+            await fetchSettings();
         } catch (error: any) {
             console.error('Błąd podczas zapisywania ustawień:', error);
             showToast(error.response?.data?.message || 'Błąd podczas zapisywania ustawień', 'error');
@@ -88,13 +90,16 @@ const UstawieniaFirmyPage = () => {
     return (
         <div className="page-container">
             <header className="page-header">
-                <h1>⚙️ Ustawienia Firmy</h1>
-                <button 
-                    className="btn btn-secondary" 
-                    onClick={() => navigate('/')}
-                >
-                    ← Powrót do panelu
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button 
+                        className="btn btn-secondary" 
+                        onClick={() => navigate('/admin')}
+                        style={{ padding: '0.5rem 1rem' }}
+                    >
+                        ← Wstecz
+                    </button>
+                    <h1>🏢 Dane Firmy</h1>
+                </div>
             </header>
 
             <div style={{

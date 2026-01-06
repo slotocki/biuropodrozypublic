@@ -82,7 +82,7 @@ function App() {
                         <Route path="/faktury/lista" element={<FakturyListPage />} />
                         <Route path="/faktury/nowa" element={<NowaFakturaPage />} />
                         <Route path="/admin" element={<AdminPanel />} />
-                        <Route path="/ustawienia-firmy" element={<UstawieniaFirmyPage />} />
+                        <Route path="/admin/ustawienia-firmy" element={<UstawieniaFirmyPage />} />
                         <Route path="/faktury/edytuj/:id" element={<EdytujFakturaPage />} />
                         <Route path="/faktury/korekta/:id" element={<KorektaFakturaPage />} />
 

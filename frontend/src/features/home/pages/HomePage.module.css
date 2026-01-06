@@ -156,23 +156,6 @@
     }
 }
 
-/* Kafelek ustawień */
-.settingsTile {
-    border-color: #667eea !important;
-}
-
-.settingsTile .tileTitle {
-    color: #667eea !important;
-}
-
-.settingsTile:hover {
-    border-color: #667eea !important;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
-}
-
-.settingsTile .tileArrow {
-    color: #667eea !important;
-}
 
 .pageWrapper {
     padding: 2rem;
