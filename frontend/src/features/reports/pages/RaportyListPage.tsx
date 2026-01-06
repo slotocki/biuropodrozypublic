@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '@/common/api/apiClient';
 import { useNotification } from '@/common/context/NotificationContext';
 import '@/common/styles/PageStyles.css';
@@ -34,7 +34,7 @@ const RaportyListPage = () => {
     }, [fetchMiesiace]);
 
     const handleOpenReport = (rok: number, miesiac: number) => {
-        navigate(`/raporty/${rok}/${miesiac}`);
+        navigate(`/admin/raporty/${rok}/${miesiac}`);
     };
 
     // Bieżący miesiąc
@@ -52,19 +52,32 @@ const RaportyListPage = () => {
 
     return (
         <div className="page-container">
+            {/* Przycisk cofania NAD nagłówkiem */}
+            <div style={{ marginBottom: '1rem' }}>
+                <button 
+                    className="btn btn-secondary" 
+                    onClick={() => navigate('/admin')}
+                    style={{ 
+                        padding: '0.6rem 1.2rem',
+                        borderRadius: '6px',
+                        fontSize: '0.95rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                    }}
+                >
+                    ← Panel administracyjny
+                </button>
+            </div>
+
             <header className="page-header">
-                <h1>📊 Raporty Miesięczne</h1>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => handleOpenReport(biezacyRok, biezacyMiesiac)}
-                    >
-                        📅 Raport bieżącego miesiąca
-                    </button>
-                    <Link to="/faktury/lista" className="btn btn-secondary">
-                        ← Powrót do faktur
-                    </Link>
-                </div>
+                <h1 style={{ margin: 0 }}>📊 Raporty Miesięczne</h1>
+                <button
+                    className="btn btn-primary"
+                    onClick={() => handleOpenReport(biezacyRok, biezacyMiesiac)}
+                >
+                    📅 Raport bieżącego miesiąca
+                </button>
             </header>
 
             {/* Filtry roku */}

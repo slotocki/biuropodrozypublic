@@ -340,13 +340,6 @@ const FakturyListPage = () => {
                     <Link to="/faktury/nowa" className="btn btn-primary">
                         ➕ Wystaw nową fakturę
                     </Link>
-                    <Link 
-                        to={`/raporty/${new Date().getFullYear()}/${new Date().getMonth() + 1}`} 
-                        className="btn btn-secondary"
-                        style={{ backgroundColor: '#667eea' }}
-                    >
-                        📊 Raport miesiąca
-                    </Link>
                 </div>
             </header>
 
@@ -483,7 +476,7 @@ const FakturyListPage = () => {
                                     padding: '0.75rem',
                                     borderBottom: '1px solid #4a5568',
                                     color: '#e2e8f0',
-                                    textAlign: 'left',
+                                    textAlign: 'right',
                                     whiteSpace: 'nowrap'
                                 }}
                             >
@@ -546,10 +539,39 @@ const FakturyListPage = () => {
                                             onChange={() => toggleSelect(faktura.idFaktura)}
                                         />
                                     </td>
-                                    <td style={{ padding: '0.6rem 0.75rem', color: '#e2e8f0' }}>{faktura.numerFaktury}</td>
+                                    <td style={{ padding: '0.6rem 0.75rem' }} onClick={(e) => e.stopPropagation()}>
+                                        <span
+                                            onClick={() => openPdfInNewTab(faktura.idFaktura)}
+                                            style={{
+                                                color: '#4299e1',
+                                                cursor: 'pointer',
+                                                textDecoration: 'underline'
+                                            }}
+                                            title="Kliknij aby otworzyć PDF"
+                                        >
+                                            {faktura.numerFaktury}
+                                        </span>
+                                    </td>
                                     <td style={{ padding: '0.6rem 0.75rem', color: '#e2e8f0' }}>{new Date(faktura.dataWystawienia).toLocaleDateString()}</td>
-                                    <td style={{ padding: '0.6rem 0.75rem', color: '#e2e8f0' }}>{faktura.nazwaKontrahenta}</td>
-                                    <td style={{ padding: '0.6rem 0.75rem', color: faktura.kwotaBrutto < 0 ? '#ef4444' : '#e2e8f0' }}>
+                                    <td style={{ padding: '0.6rem 0.75rem' }} onClick={(e) => e.stopPropagation()}>
+                                        <span
+                                            onClick={() => navigate(`/kontrahenci?search=${encodeURIComponent(faktura.nazwaKontrahenta)}`)}
+                                            style={{
+                                                color: '#4299e1',
+                                                cursor: 'pointer',
+                                                textDecoration: 'underline'
+                                            }}
+                                            title="Kliknij aby przejść do kontrahenta"
+                                        >
+                                            {faktura.nazwaKontrahenta}
+                                        </span>
+                                    </td>
+                                    <td style={{ 
+                                        padding: '0.6rem 0.75rem', 
+                                        color: faktura.kwotaBrutto < 0 ? '#ef4444' : '#e2e8f0',
+                                        textAlign: 'right',
+                                        fontVariantNumeric: 'tabular-nums'
+                                    }}>
                                         {faktura.kwotaBrutto.toFixed(2)} zł
                                     </td>
                                     <td style={{ padding: '0.6rem 0.75rem' }}>
@@ -602,13 +624,20 @@ const FakturyListPage = () => {
                         value={rowsPerPage}
                         onChange={handleRowsPerPageChange}
                         style={{
-                            padding: '0.35rem 0.5rem',
+                            padding: '0.4rem 1.8rem 0.4rem 0.6rem',
                             borderRadius: '4px',
                             border: '1px solid #4a5568',
                             backgroundColor: '#2d3748',
                             color: '#fff',
                             fontSize: '0.85rem',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            appearance: 'none',
+                            WebkitAppearance: 'none',
+                            MozAppearance: 'none',
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0aec0' d='M6 8L2 4h8z'/%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 0.5rem center',
+                            backgroundSize: '12px'
                         }}
                     >
                         {ROWS_OPTIONS.map(option => (
@@ -618,73 +647,71 @@ const FakturyListPage = () => {
                     <span>z {sortedFaktury.length} faktur</span>
                 </div>
                 
-                {totalPages > 1 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <button
-                            onClick={() => handlePageChange(1)}
-                            disabled={currentPage === 1}
-                            style={{
-                                padding: '0.4rem 0.6rem',
-                                borderRadius: '4px',
-                                border: 'none',
-                                backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
-                                color: currentPage === 1 ? '#6b7280' : '#fff',
-                                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                                fontSize: '0.85rem'
-                            }}
-                        >
-                            ««
-                        </button>
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            style={{
-                                padding: '0.4rem 0.6rem',
-                                borderRadius: '4px',
-                                border: 'none',
-                                backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
-                                color: currentPage === 1 ? '#6b7280' : '#fff',
-                                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                                fontSize: '0.85rem'
-                            }}
-                        >
-                            «
-                        </button>
-                        <span style={{ padding: '0 0.5rem', color: '#e2e8f0' }}>
-                            Strona {currentPage} z {totalPages}
-                        </span>
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            style={{
-                                padding: '0.4rem 0.6rem',
-                                borderRadius: '4px',
-                                border: 'none',
-                                backgroundColor: currentPage === totalPages ? '#374151' : '#4a5568',
-                                color: currentPage === totalPages ? '#6b7280' : '#fff',
-                                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                                fontSize: '0.85rem'
-                            }}
-                        >
-                            »
-                        </button>
-                        <button
-                            onClick={() => handlePageChange(totalPages)}
-                            disabled={currentPage === totalPages}
-                            style={{
-                                padding: '0.4rem 0.6rem',
-                                borderRadius: '4px',
-                                border: 'none',
-                                backgroundColor: currentPage === totalPages ? '#374151' : '#4a5568',
-                                color: currentPage === totalPages ? '#6b7280' : '#fff',
-                                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                                fontSize: '0.85rem'
-                            }}
-                        >
-                            »»
-                        </button>
-                    </div>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        style={{
+                            padding: '0.4rem 0.6rem',
+                            borderRadius: '4px',
+                            border: 'none',
+                            backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
+                            color: currentPage === 1 ? '#6b7280' : '#fff',
+                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                            fontSize: '0.85rem'
+                        }}
+                    >
+                        ««
+                    </button>
+                    <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        style={{
+                            padding: '0.4rem 0.6rem',
+                            borderRadius: '4px',
+                            border: 'none',
+                            backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
+                            color: currentPage === 1 ? '#6b7280' : '#fff',
+                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                            fontSize: '0.85rem'
+                        }}
+                    >
+                        «
+                    </button>
+                    <span style={{ padding: '0 0.5rem', color: '#e2e8f0' }}>
+                        Strona {currentPage} z {totalPages || 1}
+                    </span>
+                    <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        style={{
+                            padding: '0.4rem 0.6rem',
+                            borderRadius: '4px',
+                            border: 'none',
+                            backgroundColor: currentPage === totalPages || totalPages === 0 ? '#374151' : '#4a5568',
+                            color: currentPage === totalPages || totalPages === 0 ? '#6b7280' : '#fff',
+                            cursor: currentPage === totalPages || totalPages === 0 ? 'not-allowed' : 'pointer',
+                            fontSize: '0.85rem'
+                        }}
+                    >
+                        »
+                    </button>
+                    <button
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        style={{
+                            padding: '0.4rem 0.6rem',
+                            borderRadius: '4px',
+                            border: 'none',
+                            backgroundColor: currentPage === totalPages || totalPages === 0 ? '#374151' : '#4a5568',
+                            color: currentPage === totalPages || totalPages === 0 ? '#6b7280' : '#fff',
+                            cursor: currentPage === totalPages || totalPages === 0 ? 'not-allowed' : 'pointer',
+                            fontSize: '0.85rem'
+                        }}
+                    >
+                        »»
+                    </button>
+                </div>
             </div>
 
             {showEmailModal && (

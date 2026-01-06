@@ -189,6 +189,9 @@ const AdminPanel = () => {
                     <Link to="/admin/ustawienia-firmy" className="btn btn-secondary" style={buttonStyle}>
                         🏢 Dane firmy
                     </Link>
+                    <Link to="/admin/raporty" className="btn btn-secondary" style={{...buttonStyle, backgroundColor: '#667eea'}}>
+                        📊 Raporty
+                    </Link>
                     <button className="btn btn-primary" onClick={handleAddNew} style={buttonStyle}>
                         ➕ Dodaj użytkownika
                     </button>

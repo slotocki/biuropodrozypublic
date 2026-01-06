@@ -141,8 +141,26 @@ const RaportDetailPage = () => {
 
     return (
         <div className="page-container">
+            {/* Przycisk cofania NAD nagłówkiem */}
+            <div style={{ marginBottom: '1rem' }}>
+                <button 
+                    className="btn btn-secondary" 
+                    onClick={() => navigate('/admin/raporty')}
+                    style={{ 
+                        padding: '0.6rem 1.2rem',
+                        borderRadius: '6px',
+                        fontSize: '0.95rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                    }}
+                >
+                    ← Lista raportów
+                </button>
+            </div>
+
             <header className="page-header">
-                <h1>📊 Raport: {raport.nazwaMiesiaca} {raport.rok}</h1>
+                <h1 style={{ margin: 0 }}>📊 Raport: {raport.nazwaMiesiaca} {raport.rok}</h1>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                     <button
                         className="btn btn-primary"
@@ -372,9 +390,42 @@ const RaportDetailPage = () => {
                                                     backgroundColor: isKorekta ? 'rgba(239, 68, 68, 0.1)' : 'transparent'
                                                 }}
                                             >
-                                                <td>{f.numerFaktury}</td>
+                                                <td>
+                                                    <span
+                                                        onClick={() => {
+                                                            // Otwórz PDF faktury w nowej karcie
+                                                            apiClient.get(`/api/fakturyvat/${f.idFaktura}/pdf`, { responseType: 'blob' })
+                                                                .then(response => {
+                                                                    const blob = new Blob([response.data], { type: 'application/pdf' });
+                                                                    const url = window.URL.createObjectURL(blob);
+                                                                    window.open(url, '_blank');
+                                                                })
+                                                                .catch(() => showToast('Nie udało się otworzyć PDF', 'error'));
+                                                        }}
+                                                        style={{
+                                                            color: '#4299e1',
+                                                            cursor: 'pointer',
+                                                            textDecoration: 'underline'
+                                                        }}
+                                                        title="Kliknij aby otworzyć PDF"
+                                                    >
+                                                        {f.numerFaktury}
+                                                    </span>
+                                                </td>
                                                 <td>{new Date(f.dataWystawienia).toLocaleDateString()}</td>
-                                                <td>{f.nazwaKontrahenta}</td>
+                                                <td>
+                                                    <span
+                                                        onClick={() => navigate(`/kontrahenci?search=${encodeURIComponent(f.nazwaKontrahenta)}`)}
+                                                        style={{
+                                                            color: '#4299e1',
+                                                            cursor: 'pointer',
+                                                            textDecoration: 'underline'
+                                                        }}
+                                                        title="Kliknij aby przejść do kontrahenta"
+                                                    >
+                                                        {f.nazwaKontrahenta}
+                                                    </span>
+                                                </td>
                                                 <td>{f.nipKontrahenta}</td>
                                                 <td style={{ 
                                                     textAlign: 'right',

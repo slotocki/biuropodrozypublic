@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import apiClient from '@/common/api/apiClient';
 import { useNotification } from '@/common/context/NotificationContext';
 import '@/common/styles/PageStyles.css';
@@ -10,6 +11,7 @@ type SortField = 'nazwaFirmy' | 'nip' | 'email' | 'numerTelefonu';
 type SortDirection = 'asc' | 'desc' | null;
 
 const KontrahenciPage = () => {
+    const [searchParams] = useSearchParams();
     const { showToast, showConfirm } = useNotification();
     const [kontrahenci, setKontrahenci] = useState<Kontrahent[]>([]);
     const [loading, setLoading] = useState(true);
@@ -21,6 +23,14 @@ const KontrahenciPage = () => {
 
     const [sortField, setSortField] = useState<SortField | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+    // Obsługa parametru search z URL
+    useEffect(() => {
+        const searchFromUrl = searchParams.get('search');
+        if (searchFromUrl) {
+            setSearchTerm(searchFromUrl);
+        }
+    }, [searchParams]);
 
     // ✅ USUŃ showToast z dependency array
     const fetchKontrahenci = useCallback(async () => {
