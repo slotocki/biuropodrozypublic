@@ -67,10 +67,12 @@ const UstawieniaFirmyPage = () => {
 
         try {
             setSaving(true);
-            await apiClient.put('/api/admin/firm-settings', settings);
+            const response = await apiClient.put('/api/admin/firm-settings', settings);
+            // Użyj danych zwróconych z serwera (są aktualne)
+            if (response.data && response.data.nazwaFirmy !== undefined) {
+                setSettings(response.data);
+            }
             showToast('Ustawienia firmy zostały zapisane', 'success');
-            // Ponowne pobranie danych po zapisie - naprawia problem z wyświetlaniem
-            await fetchSettings();
         } catch (error: any) {
             console.error('Błąd podczas zapisywania ustawień:', error);
             showToast(error.response?.data?.message || 'Błąd podczas zapisywania ustawień', 'error');

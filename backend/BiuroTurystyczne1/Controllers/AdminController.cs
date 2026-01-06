@@ -137,28 +137,70 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
-    /// Pobiera ustawienia firmy (dane sprzedawcy na fakturach)
+    /// Pobiera ustawienia firmy bezpośrednio z pliku konfiguracyjnego
     /// </summary>
     [HttpGet("firm-settings")]
-    public IActionResult GetFirmSettings()
+    public async Task<IActionResult> GetFirmSettings()
     {
-        var settings = new FirmSettingsDto
+        try
         {
-            NazwaFirmy = _configuration["FirmSettings:NazwaFirmy"] ?? "",
-            Adres = _configuration["FirmSettings:Adres"] ?? "",
-            NIP = _configuration["FirmSettings:NIP"] ?? "",
-            Telefon = _configuration["FirmSettings:Telefon"] ?? "",
-            Bank = _configuration["FirmSettings:Bank"] ?? "",
-            NumerKonta = _configuration["FirmSettings:NumerKonta"] ?? "",
-            MiejsceWystawienia = _configuration["FirmSettings:MiejsceWystawienia"] ?? "",
-            EmailKsiegowosci = _configuration["FirmSettings:EmailKsiegowosci"] ?? ""
-        };
-        
-        return Ok(settings);
+            var appSettingsPath = Path.Combine(_environment.ContentRootPath, "appsettings.json");
+            
+            if (!System.IO.File.Exists(appSettingsPath))
+            {
+                // Fallback do konfiguracji w pamięci
+                return Ok(new FirmSettingsDto
+                {
+                    NazwaFirmy = _configuration["FirmSettings:NazwaFirmy"] ?? "",
+                    Adres = _configuration["FirmSettings:Adres"] ?? "",
+                    NIP = _configuration["FirmSettings:NIP"] ?? "",
+                    Telefon = _configuration["FirmSettings:Telefon"] ?? "",
+                    Bank = _configuration["FirmSettings:Bank"] ?? "",
+                    NumerKonta = _configuration["FirmSettings:NumerKonta"] ?? "",
+                    MiejsceWystawienia = _configuration["FirmSettings:MiejsceWystawienia"] ?? "",
+                    EmailKsiegowosci = _configuration["FirmSettings:EmailKsiegowosci"] ?? ""
+                });
+            }
+
+            // Czytaj bezpośrednio z pliku aby mieć aktualne dane
+            var jsonString = await System.IO.File.ReadAllTextAsync(appSettingsPath);
+            using var jsonDoc = JsonDocument.Parse(jsonString);
+            
+            var firmSettings = jsonDoc.RootElement.GetProperty("FirmSettings");
+            
+            var settings = new FirmSettingsDto
+            {
+                NazwaFirmy = firmSettings.TryGetProperty("NazwaFirmy", out var nf) ? nf.GetString() ?? "" : "",
+                Adres = firmSettings.TryGetProperty("Adres", out var ad) ? ad.GetString() ?? "" : "",
+                NIP = firmSettings.TryGetProperty("NIP", out var nip) ? nip.GetString() ?? "" : "",
+                Telefon = firmSettings.TryGetProperty("Telefon", out var tel) ? tel.GetString() ?? "" : "",
+                Bank = firmSettings.TryGetProperty("Bank", out var bank) ? bank.GetString() ?? "" : "",
+                NumerKonta = firmSettings.TryGetProperty("NumerKonta", out var nk) ? nk.GetString() ?? "" : "",
+                MiejsceWystawienia = firmSettings.TryGetProperty("MiejsceWystawienia", out var mw) ? mw.GetString() ?? "" : "",
+                EmailKsiegowosci = firmSettings.TryGetProperty("EmailKsiegowosci", out var ek) ? ek.GetString() ?? "" : ""
+            };
+            
+            return Ok(settings);
+        }
+        catch (Exception)
+        {
+            // Fallback do konfiguracji w pamięci w przypadku błędu
+            return Ok(new FirmSettingsDto
+            {
+                NazwaFirmy = _configuration["FirmSettings:NazwaFirmy"] ?? "",
+                Adres = _configuration["FirmSettings:Adres"] ?? "",
+                NIP = _configuration["FirmSettings:NIP"] ?? "",
+                Telefon = _configuration["FirmSettings:Telefon"] ?? "",
+                Bank = _configuration["FirmSettings:Bank"] ?? "",
+                NumerKonta = _configuration["FirmSettings:NumerKonta"] ?? "",
+                MiejsceWystawienia = _configuration["FirmSettings:MiejsceWystawienia"] ?? "",
+                EmailKsiegowosci = _configuration["FirmSettings:EmailKsiegowosci"] ?? ""
+            });
+        }
     }
 
     /// <summary>
-    /// Zapisuje ustawienia firmy do pliku JSON
+    /// Zapisuje ustawienia firmy do pliku JSON i zwraca zapisane dane
     /// </summary>
     [HttpPut("firm-settings")]
     public async Task<IActionResult> UpdateFirmSettings([FromBody] FirmSettingsDto settings)
@@ -209,7 +251,8 @@ public class AdminController : ControllerBase
             var newJsonString = System.Text.Encoding.UTF8.GetString(stream.ToArray());
             await System.IO.File.WriteAllTextAsync(appSettingsPath, newJsonString);
             
-            return Ok(new { message = "Ustawienia firmy zostały zapisane. Restart serwera może być wymagany." });
+            // Zwróć zapisane dane zamiast tylko komunikatu
+            return Ok(settings);
         }
         catch (Exception ex)
         {
