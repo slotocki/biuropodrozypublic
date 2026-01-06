@@ -10,9 +10,9 @@ import WybierzKontrahentaModal from '@/features/invoice/components/modals/Wybier
 import KontrahentForm from '@/features/invoice/components/form/KontrahentForm';
 import type { Kontrahent, Usluga, PozycjaFaktury } from '@/common/types';
 
-const EdytujFakturaPage = () => { // ⭐ Zmieniona nazwa komponentu
+const EdytujFakturaPage = () => { 
     const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>(); // ⭐ Pobierz ID z URL
+    const { id } = useParams<{ id: string }>(); 
     const { showToast } = useNotification();
 
     const [loading, setLoading] = useState(true); // ⭐ Stan ładowania

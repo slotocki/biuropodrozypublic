@@ -8,16 +8,7 @@ import Step1BasicInfo from '@/features/offer/components/form/Step1_BasicInfo';
 import Step2OsrodkiPokoje from '@/features/offer/components/form/Step2_OsrodkiPokoje';
 import Step3Transport from '@/features/offer/components/form/Step3_Transport';
 import Step4Summary from '@/features/offer/components/form/Step4_Summary';
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import ofertaApi from '@/common/api/ofertaApi';
-import type { OfertaCreateDto } from '@/common/api/ofertaApi';
-import { useNotification } from '@/common/context/NotificationContext';
-import '@/common/styles/PageStyles.css';
-import Step1BasicInfo from '@/features/offer/components/form/Step1_BasicInfo';
-import Step2OsrodkiPokoje from '@/features/offer/components/form/Step2_OsrodkiPokoje';
-import Step3Transport from '@/features/offer/components/form/Step3_Transport';
-import Step4Summary from '@/features/offer/components/form/Step4_Summary';
+
 const EditOfertaPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
