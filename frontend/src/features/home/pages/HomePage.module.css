@@ -1,4 +1,4 @@
-﻿.dashboardContainer {
+﻿﻿.dashboardContainer {
     min-height: 100vh;
     background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
     padding: 2rem;
@@ -154,34 +154,49 @@
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
+}
 
+/* Kafelek ustawień */
+.settingsTile {
+    border-color: #667eea !important;
+}
 
-    /* Dodaj na końcu pliku HomePage.module.css */
+.settingsTile .tileTitle {
+    color: #667eea !important;
+}
 
+.settingsTile:hover {
+    border-color: #667eea !important;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
+}
+
+.settingsTile .tileArrow {
+    color: #667eea !important;
+}
+
+.pageWrapper {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.dashboardHeader {
+    margin-bottom: 2rem;
+}
+
+.dashboardHeader h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
     .pageWrapper {
-        padding: 2rem;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    .dashboardHeader {
-        margin-bottom: 2rem;
+        padding: 1rem;
     }
 
     .dashboardHeader h1 {
-        font-size: 2.5rem;
-        margin: 0;
-        color: #fff;
+        font-size: 1.8rem;
     }
-
-    @media (max-width: 768px) {
-        .pageWrapper {
-            padding: 1rem;
-        }
-
-        .dashboardHeader h1 {
-            font-size: 1.8rem;
-        }
-    }
-
 }
+

@@ -1,4 +1,4 @@
-﻿import './App.css';
+﻿﻿import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/common/context/AuthContext';
 import { NotificationProvider } from '@/common/context/NotificationContext';
@@ -10,6 +10,7 @@ import HomePage from '@/features/home/pages/HomePage';
 
 // Admin
 import AdminPanel from '@/features/admin/pages/AdminPanel';
+import UstawieniaFirmyPage from '@/features/admin/pages/UstawieniaFirmyPage';
 
 // Invoice (Faktury)
 import KontrahenciPage from '@/features/invoice/pages/KontrahenciPage';
@@ -17,6 +18,11 @@ import FakturyLayout from '@/features/invoice/pages/FakturyLayout';
 import FakturyListPage from '@/features/invoice/pages/FakturyListPage';
 import NowaFakturaPage from '@/features/invoice/pages/NowaFakturaPage';
 import EdytujFakturaPage from '@/features/invoice/pages/EdytujFakturaPage';
+import KorektaFakturaPage from '@/features/invoice/pages/KorektaFakturaPage';
+
+// Reports (Raporty)
+import RaportyListPage from '@/features/reports/pages/RaportyListPage';
+import RaportDetailPage from '@/features/reports/pages/RaportDetailPage';
 
 // Client (Klienci)
 import KlienciLayout from '@/features/client/pages/KlienciLayout';
@@ -76,7 +82,13 @@ function App() {
                         <Route path="/faktury/lista" element={<FakturyListPage />} />
                         <Route path="/faktury/nowa" element={<NowaFakturaPage />} />
                         <Route path="/admin" element={<AdminPanel />} />
+                        <Route path="/ustawienia-firmy" element={<UstawieniaFirmyPage />} />
                         <Route path="/faktury/edytuj/:id" element={<EdytujFakturaPage />} />
+                        <Route path="/faktury/korekta/:id" element={<KorektaFakturaPage />} />
+
+                        {/* Moduł raportów */}
+                        <Route path="/raporty" element={<RaportyListPage />} />
+                        <Route path="/raporty/:rok/:miesiac" element={<RaportDetailPage />} />
 
                         {/* Strona kontrahentów */}
                         <Route path="/kontrahenci" element={<KontrahenciPage />} />

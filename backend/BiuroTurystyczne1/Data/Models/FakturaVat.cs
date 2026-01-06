@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 
 namespace BiuroTurystyczne1.Data.Models;
@@ -37,6 +37,16 @@ public partial class FakturaVat
     public int? Wersja { get; set; }
 
     public bool? CzyAnulowana { get; set; }
+
+    /// <summary>
+    /// Typ dokumentu: 'FAKTURA' lub 'KOREKTA'
+    /// </summary>
+    public string? TypDokumentu { get; set; }
+
+    /// <summary>
+    /// Powód korekty - wymagany dla faktur korygujących
+    /// </summary>
+    public string? PowodKorekty { get; set; }
 
     public virtual ICollection<FakturaVatPozycja> FakturaVatPozycjas { get; set; } = new List<FakturaVatPozycja>();
 

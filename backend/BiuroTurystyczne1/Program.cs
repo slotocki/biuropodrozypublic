@@ -71,57 +71,55 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     
-   // try
-    //{
+    try
+    {
         // Utwórz rolę Admin jeśli nie istnieje
-      //  if (!await roleManager.RoleExistsAsync("Admin"))
-       // {
-         //   await roleManager.CreateAsync(new IdentityRole("Admin"));
-           // logger.LogInformation("Utworzono rolę Admin");
-       // }
+        if (!await roleManager.RoleExistsAsync("Admin"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+            logger.LogInformation("Utworzono rolę Admin");
+        }
         
-        // Pobierz dane admina z konfiguracji lub zmiennych środowiskowych
-        //var adminEmail = builder.Configuration["Admin:Email"] 
-          //              ?? Environment.GetEnvironmentVariable("ADMIN_EMAIL") 
-            //            ?? "admin@biuro.pl";
-        
-      //  var adminPassword = builder.Configuration["Admin:Password"] 
-        //                   ?? Environment.GetEnvironmentVariable("ADMIN_PASSWORD") 
-          //                 ?? "Admin123!";
+        // Pobierz dane admina z konfiguracji
+        var adminEmail = builder.Configuration["Admin:Email"] ?? "admin@biuro.pl";
+        var adminPassword = builder.Configuration["Admin:Password"] ?? "Sara1234#";
         
         // Sprawdź czy admin istnieje
-       // var admin = await userManager.FindByEmailAsync(adminEmail);
+        var admin = await userManager.FindByEmailAsync(adminEmail);
         
-       // if (admin == null)
-        //{
-          //  admin = new IdentityUser 
-           // { 
-             //   UserName = adminEmail, 
-               // Email = adminEmail, 
-               // EmailConfirmed = true 
-         //   };
+        if (admin == null)
+        {
+            admin = new IdentityUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
             
-           // var result = await userManager.CreateAsync(admin, adminPassword);
+            var result = await userManager.CreateAsync(admin, adminPassword);
             
-            //if (result.Succeeded)
-           // {
-             //   await userManager.AddToRoleAsync(admin, "Admin");
-               // logger.LogWarning("⚠️ WAŻNE: Utworzono użytkownika admin. Email: {Email}. Zmień hasło po pierwszym logowaniu!", adminEmail);
-           // }
-         //   else
-           // {
-             //   logger.LogError("Błąd podczas tworzenia admina: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
-           // }
-       // }
-        //else
-        //{
-          //  logger.LogInformation("Użytkownik admin już istnieje");
-        //}
-   // }
-    //catch (Exception ex)
-    //{
-      //  logger.LogError(ex, "Błąd podczas inicjalizacji admina");
-    //}
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
+                logger.LogWarning("Utworzono użytkownika admin: {Email}", adminEmail);
+            }
+            else
+            {
+                logger.LogError("Błąd tworzenia admina: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+        else
+        {
+            // Reset hasła admina na to z konfiguracji
+            var token = await userManager.GeneratePasswordResetTokenAsync(admin);
+            await userManager.ResetPasswordAsync(admin, token, adminPassword);
+            logger.LogInformation("Użytkownik admin już istnieje, hasło zresetowane");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Błąd podczas inicjalizacji admina");
+    }
 }
 
 // --- Konfiguracja Pipeline (Middleware) ---
@@ -154,13 +152,13 @@ app.MapControllers();
   //  var admin = await userManager.FindByEmailAsync("admin@biuro.pl");
  //   if (admin == null)
   //      return Results.NotFound("Admin nie znaleziony");
-    
+
  //   var token = await userManager.GeneratePasswordResetTokenAsync(admin);
  //   var result = await userManager.ResetPasswordAsync(admin, token, "Admin123!");
-    
+
  //   if (result.Succeeded)
   //      return Results.Ok("Hasło zresetowane pomyślnie");
-    
+
    // return Results.BadRequest(result.Errors);
 //}).AllowAnonymous();
 

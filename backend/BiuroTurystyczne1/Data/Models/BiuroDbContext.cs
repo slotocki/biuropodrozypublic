@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -269,6 +269,13 @@ public partial class BiuroDbContext : DbContext
                 .HasColumnType("int(11)")
                 .HasColumnName("wersja");
             entity.Property(e => e.Zaplacono).HasPrecision(12, 2);
+            entity.Property(e => e.TypDokumentu)
+                .HasMaxLength(50)
+                .HasDefaultValue("FAKTURA")
+                .HasColumnName("Typ_dokumentu");
+            entity.Property(e => e.PowodKorekty)
+                .HasMaxLength(500)
+                .HasColumnName("Powod_korekty");
 
             entity.HasOne(d => d.IdKontrahentNavigation).WithMany(p => p.FakturaVats)
                 .HasForeignKey(d => d.IdKontrahent)

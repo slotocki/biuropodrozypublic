@@ -44,6 +44,15 @@ const HomePage = () => {
                         </p>
                         <span className={styles.tileArrow}>→</span>
                     </Link>
+
+                    <Link to="/ustawienia-firmy" className={`${styles.tile} ${styles.settingsTile}`}>
+                        <div className={styles.tileIcon}>⚙️</div>
+                        <h3 className={styles.tileTitle}>Ustawienia Firmy</h3>
+                        <p className={styles.tileDescription}>
+                            Dane firmy widoczne na fakturach VAT.
+                        </p>
+                        <span className={styles.tileArrow}>→</span>
+                    </Link>
                 </div>
 
                 <NotatkiPanel />

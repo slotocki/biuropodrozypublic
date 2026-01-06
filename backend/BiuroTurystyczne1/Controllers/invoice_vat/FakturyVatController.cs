@@ -34,18 +34,47 @@ public class FakturyVatController : ControllerBase
         return Path.Combine(Directory.GetCurrentDirectory(), generatedPath);
     }
     
-    [HttpGet]
-    public async Task<IActionResult> GetFaktury()
+    private FirmSettings GetFirmSettings()
     {
-        var faktury = await _context.FakturaVats
+        return new FirmSettings
+        {
+            NazwaFirmy = _configuration["FirmSettings:NazwaFirmy"] ?? "NAUCZYCIELSKIE BIURO TURYSTYCZNE \"BELFEREK\" EWA KUSTRA",
+            Adres = _configuration["FirmSettings:Adres"] ?? "al. Juliusza Słowackiego 52, 30-018 Kraków",
+            NIP = _configuration["FirmSettings:NIP"] ?? "677 129 04 82",
+            Telefon = _configuration["FirmSettings:Telefon"] ?? "+48 575 550 302",
+            Bank = _configuration["FirmSettings:Bank"] ?? "SANTANDER BANK POLSKA S.A",
+            NumerKonta = _configuration["FirmSettings:NumerKonta"] ?? "24 1090 2053 0000 0001 1444 5232",
+            MiejsceWystawienia = _configuration["FirmSettings:MiejsceWystawienia"] ?? "KRAKÓW",
+            LogoPath = _configuration["FirmSettings:LogoPath"]
+        };
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> GetFaktury([FromQuery] string? kontrahent = null)
+    {
+        var query = _context.FakturaVats
             .Include(f => f.IdKontrahentNavigation)
+            .Include(f => f.OryginalnaFaktura)
+            .AsQueryable();
+
+        // Filtrowanie po nazwie kontrahenta
+        if (!string.IsNullOrWhiteSpace(kontrahent))
+        {
+            var kontrahentLower = kontrahent.ToLower();
+            query = query.Where(f => f.IdKontrahentNavigation.NazwaFirmy.ToLower().Contains(kontrahentLower));
+        }
+
+        var faktury = await query
             .Select(f => new 
             {
                 f.IdFaktura,
                 f.NumerFaktury,
                 f.DataWystawienia,
                 f.KwotaBrutto,
-                NazwaKontrahenta = f.IdKontrahentNavigation.NazwaFirmy
+                NazwaKontrahenta = f.IdKontrahentNavigation.NazwaFirmy,
+                TypDokumentu = f.TypDokumentu ?? "FAKTURA",
+                f.OryginalnaFakturaId,
+                NumerFakturyOryginalnej = f.OryginalnaFaktura != null ? f.OryginalnaFaktura.NumerFaktury : null
             })
             .OrderByDescending(f => f.DataWystawienia)
             .ToListAsync();
@@ -193,7 +222,7 @@ public class FakturyVatController : ControllerBase
                     }
                     
                     var wystawiajacyTemp = new Uzytkownik { Login = wystawiajacyNazwa };
-                    var document = new FakturaVatDocument(fakturaDoPdf, wystawiajacyTemp);
+                    var document = new FakturaVatDocument(fakturaDoPdf, wystawiajacyTemp, GetFirmSettings());
                     var pdfBytes = document.GeneratePdf();
                     
                     var fileName = $"faktura-{fakturaDoPdf.NumerFaktury.Replace('/', '_')}.pdf";
@@ -469,7 +498,7 @@ public class FakturyVatController : ControllerBase
                     };
                     
                     var wystawiajacyTemp = new Uzytkownik { Login = wystawiajacyNazwa };
-                    var document = new FakturaVatDocument(dokumentZOryginalnymNumerem, wystawiajacyTemp);
+                    var document = new FakturaVatDocument(dokumentZOryginalnymNumerem, wystawiajacyTemp, GetFirmSettings());
                     var pdfBytes = document.GeneratePdf();
                     
                     var fileName = $"faktura-{nowyNumerFaktury.Replace('/', '_')}.pdf";
@@ -568,7 +597,7 @@ public class FakturyVatController : ControllerBase
             FakturaVatPozycjas = fakturaFull.FakturaVatPozycjas
         };
 
-        var document = new FakturaVatDocument(fakturaDoGenerowania, wystawiajacy);
+        var document = new FakturaVatDocument(fakturaDoGenerowania, wystawiajacy, GetFirmSettings());
         var pdfBytesNew = document.GeneratePdf();
         var fileNameNew = $"faktura-{numerBazowy.Replace('/', '_')}.pdf";
 
@@ -580,6 +609,300 @@ public class FakturyVatController : ControllerBase
     {
         return Ok("Wysyłka e-mail - w budowie");
     }
+
+    /// <summary>
+    /// Pobiera dane faktury do utworzenia korekty
+    /// </summary>
+    [HttpGet("{id}/korekta")]
+    public async Task<IActionResult> GetFakturaDoKorekty(uint id)
+    {
+        try
+        {
+            var faktura = await _context.FakturaVats
+                .Include(f => f.IdKontrahentNavigation)
+                .Include(f => f.FakturaVatPozycjas)
+                    .ThenInclude(p => p.IdUslugaNavigation)
+                .FirstOrDefaultAsync(f => f.IdFaktura == id);
+                
+            if (faktura == null)
+            {
+                return NotFound(new { message = "Nie znaleziono faktury" });
+            }
+
+            // Sprawdź czy to już jest korekta
+            if (faktura.TypDokumentu == "KOREKTA")
+            {
+                return BadRequest(new { message = "Nie można wystawić korekty do faktury korygującej" });
+            }
+            
+            return Ok(new
+            {
+                OryginalnaFaktura = new
+                {
+                    faktura.IdFaktura,
+                    faktura.NumerFaktury,
+                    DataWystawienia = faktura.DataWystawienia.ToString("yyyy-MM-dd"),
+                    faktura.KwotaNetto,
+                    faktura.KwotaVat,
+                    faktura.KwotaBrutto
+                },
+                Kontrahent = new
+                {
+                    faktura.IdKontrahentNavigation.IdKontrahent,
+                    faktura.IdKontrahentNavigation.NazwaFirmy,
+                    faktura.IdKontrahentNavigation.Nip,
+                    faktura.IdKontrahentNavigation.Ulica,
+                    faktura.IdKontrahentNavigation.KodPocztowy,
+                    faktura.IdKontrahentNavigation.Miejscowosc
+                },
+                PozycjeOryginalne = faktura.FakturaVatPozycjas.Select(p => new
+                {
+                    p.IdUsluga,
+                    p.IdUslugaNavigation.NazwaUslugi,
+                    p.Ilosc,
+                    p.CenaNetto,
+                    p.StawkaVat,
+                    WartoscNetto = p.CenaNetto * p.Ilosc,
+                    WartoscBrutto = Math.Round(p.CenaNetto * p.Ilosc * (1 + p.StawkaVat / 100), 2)
+                }).ToList()
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd podczas pobierania faktury do korekty: {ex.Message}");
+            return StatusCode(500, new { message = "Błąd serwera podczas pobierania faktury" });
+        }
+    }
+
+    /// <summary>
+    /// Tworzy fakturę korygującą
+    /// </summary>
+    [HttpPost("{id}/korekta")]
+    public async Task<IActionResult> CreateKorekta(uint id, [FromBody] CreateKorektaDto korektaDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (string.IsNullOrWhiteSpace(korektaDto.PowodKorekty))
+        {
+            return BadRequest(new { message = "Powód korekty jest wymagany" });
+        }
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var oryginalnaFaktura = await _context.FakturaVats
+                .Include(f => f.IdKontrahentNavigation)
+                .Include(f => f.FakturaVatPozycjas)
+                    .ThenInclude(p => p.IdUslugaNavigation)
+                .FirstOrDefaultAsync(f => f.IdFaktura == id);
+
+            if (oryginalnaFaktura == null)
+            {
+                return NotFound(new { message = "Nie znaleziono faktury do skorygowania" });
+            }
+
+            if (oryginalnaFaktura.TypDokumentu == "KOREKTA")
+            {
+                return BadRequest(new { message = "Nie można wystawić korekty do faktury korygującej" });
+            }
+
+            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(identityUserId))
+            {
+                return Unauthorized(new { message = "Użytkownik nie jest zalogowany" });
+            }
+
+            // Generowanie numeru korekty
+            var today = DateTime.Now;
+            var month = today.Month.ToString().PadLeft(2, '0');
+            var year = today.Year;
+            
+            var korektyMiesiaca = await _context.FakturaVats
+                .Where(f => f.TypDokumentu == "KOREKTA" && f.NumerFaktury.Contains($"/{month}/{year}"))
+                .Select(f => f.NumerFaktury)
+                .ToListAsync();
+            
+            int maxNumer = 0;
+            foreach (var numer in korektyMiesiaca)
+            {
+                var parts = numer.Replace("KOR/", "").Split('/');
+                if (parts.Length > 0 && int.TryParse(parts[0], out int num))
+                {
+                    if (num > maxNumer)
+                        maxNumer = num;
+                }
+            }
+            
+            var numerKorekty = $"KOR/{maxNumer + 1}/{month}/{year}";
+
+            // Obliczanie kwot korekty - pozycje mogą być ujemne
+            var kwotaNetto = korektaDto.Pozycje.Sum(p => p.CenaNetto * p.Ilosc);
+            var kwotaBrutto = korektaDto.Pozycje.Sum(p => Math.Round(p.CenaNetto * p.Ilosc * (1 + p.StawkaVat / 100), 2));
+            var kwotaVat = kwotaBrutto - kwotaNetto;
+
+            var korekta = new FakturaVat
+            {
+                IdKontrahent = oryginalnaFaktura.IdKontrahent,
+                NumerFaktury = numerKorekty,
+                DataWystawienia = korektaDto.DataWystawienia,
+                TerminPlatnosci = korektaDto.TerminPlatnosci,
+                FormaPlatnosci = korektaDto.FormaPlatnosci,
+                Zaplacono = korektaDto.Zaplacono,
+                IdUser = identityUserId,
+                OryginalnaFakturaId = id,
+                TypDokumentu = "KOREKTA",
+                PowodKorekty = korektaDto.PowodKorekty,
+                CzyAnulowana = false,
+                KwotaNetto = kwotaNetto,
+                KwotaBrutto = kwotaBrutto,
+                KwotaVat = kwotaVat
+            };
+
+            await _context.FakturaVats.AddAsync(korekta);
+            await _context.SaveChangesAsync();
+
+            // Dodanie pozycji korekty
+            foreach (var pozycjaDto in korektaDto.Pozycje)
+            {
+                var pozycja = new FakturaVatPozycja
+                {
+                    IdFaktura = korekta.IdFaktura,
+                    IdUsluga = pozycjaDto.IdUsluga,
+                    Ilosc = pozycjaDto.Ilosc,
+                    CenaNetto = pozycjaDto.CenaNetto,
+                    StawkaVat = pozycjaDto.StawkaVat
+                };
+                await _context.FakturaVatPozycjas.AddAsync(pozycja);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // ========== GENEROWANIE PDF KOREKTY ==========
+            try
+            {
+                var korektaDoPdf = await _context.FakturaVats
+                    .Include(f => f.IdKontrahentNavigation)
+                    .Include(f => f.FakturaVatPozycjas)
+                        .ThenInclude(p => p.IdUslugaNavigation)
+                    .Include(f => f.OryginalnaFaktura)
+                    .FirstOrDefaultAsync(f => f.IdFaktura == korekta.IdFaktura);
+                
+                if (korektaDoPdf != null && !string.IsNullOrEmpty(korektaDoPdf.IdUser))
+                {
+                    var wystawiajacyUser = await _userManager.FindByIdAsync(korektaDoPdf.IdUser);
+                    var wystawiajacyNazwa = wystawiajacyUser?.UserName ?? "Brak danych";
+                    
+                    var pdfFolderPath = GetGeneratedFolderPath();
+                    var pdfYear = korektaDoPdf.DataWystawienia.Year;
+                    var pdfMonth = korektaDoPdf.DataWystawienia.Month.ToString("D2");
+                    var organizedPath = Path.Combine(pdfFolderPath, pdfYear.ToString(), pdfMonth);
+                    
+                    if (!Directory.Exists(organizedPath))
+                    {
+                        Directory.CreateDirectory(organizedPath);
+                    }
+                    
+                    var wystawiajacyTemp = new Uzytkownik { Login = wystawiajacyNazwa };
+                    var document = new FakturaKorygujacaDocument(korektaDoPdf, oryginalnaFaktura, wystawiajacyTemp, GetFirmSettings());
+                    var pdfBytes = document.GeneratePdf();
+                    
+                    var fileName = $"korekta-{korektaDoPdf.NumerFaktury.Replace('/', '_')}.pdf";
+                    var filePath = Path.Combine(organizedPath, fileName);
+                    await System.IO.File.WriteAllBytesAsync(filePath, pdfBytes);
+                    
+                    var relativePath = _configuration["FileStorage:GeneratedPath"] ?? "Generated/Invoices";
+                    korektaDoPdf.SciezkaPdf = Path.Combine(relativePath, pdfYear.ToString(), pdfMonth, fileName);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Błąd podczas generowania PDF korekty: {ex.Message}");
+            }
+
+            await transaction.CommitAsync();
+            
+            return Ok(new 
+            { 
+                success = true,
+                idFaktura = korekta.IdFaktura,
+                numerFaktury = korekta.NumerFaktury,
+                kwotaBrutto = korekta.KwotaBrutto,
+                message = "Faktura korygująca została pomyślnie utworzona"
+            });
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine($"Błąd tworzenia korekty: {ex.Message}");
+            return StatusCode(500, new { message = $"Błąd podczas tworzenia korekty: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// Pobiera PDF korekty
+    /// </summary>
+    [HttpGet("{id}/pdf-korekta")]
+    public async Task<IActionResult> GetKorektaPdf(uint id)
+    {
+        var korekta = await _context.FakturaVats
+            .Include(f => f.IdKontrahentNavigation)
+            .Include(f => f.FakturaVatPozycjas)
+                .ThenInclude(p => p.IdUslugaNavigation)
+            .Include(f => f.OryginalnaFaktura)
+            .FirstOrDefaultAsync(f => f.IdFaktura == id);
+
+        if (korekta == null)
+        {
+            return NotFound("Nie znaleziono korekty.");
+        }
+
+        if (korekta.TypDokumentu != "KOREKTA")
+        {
+            return BadRequest("Dokument nie jest fakturą korygującą.");
+        }
+
+        // Jeśli istnieje plik PDF, zwróć go
+        if (!string.IsNullOrEmpty(korekta.SciezkaPdf))
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), korekta.SciezkaPdf);
+            if (System.IO.File.Exists(filePath))
+            {
+                var pdfBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                var fileName = Path.GetFileName(filePath);
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+        }
+
+        // Wygeneruj PDF dynamicznie
+        var oryginalnaFaktura = await _context.FakturaVats
+            .Include(f => f.FakturaVatPozycjas)
+                .ThenInclude(p => p.IdUslugaNavigation)
+            .FirstOrDefaultAsync(f => f.IdFaktura == korekta.OryginalnaFakturaId);
+
+        if (oryginalnaFaktura == null)
+        {
+            return NotFound("Nie znaleziono oryginalnej faktury.");
+        }
+
+        var wystawiajacyNazwa = "Brak danych";
+        if (!string.IsNullOrEmpty(korekta.IdUser))
+        {
+            var wystawiajacyUser = await _userManager.FindByIdAsync(korekta.IdUser);
+            wystawiajacyNazwa = wystawiajacyUser?.UserName ?? "Brak danych";
+        }
+        
+        var wystawiajacy = new Uzytkownik { Login = wystawiajacyNazwa };
+
+        var document = new FakturaKorygujacaDocument(korekta, oryginalnaFaktura, wystawiajacy, GetFirmSettings());
+        var pdfBytesNew = document.GeneratePdf();
+        var fileNameNew = $"korekta-{korekta.NumerFaktury.Replace('/', '_')}.pdf";
+
+        return File(pdfBytesNew, "application/pdf", fileNameNew);
+    }
 }
 
 public class CreateFakturaVatDto
@@ -590,6 +913,16 @@ public class CreateFakturaVatDto
     public DateOnly? TerminPlatnosci { get; set; }
     public string? FormaPlatnosci { get; set; }
     public decimal Zaplacono { get; set; }
+    public List<FakturaVatPozycjaDto> Pozycje { get; set; } = new();
+}
+
+public class CreateKorektaDto
+{
+    public DateOnly DataWystawienia { get; set; }
+    public DateOnly? TerminPlatnosci { get; set; }
+    public string? FormaPlatnosci { get; set; }
+    public decimal Zaplacono { get; set; }
+    public string PowodKorekty { get; set; } = string.Empty;
     public List<FakturaVatPozycjaDto> Pozycje { get; set; } = new();
 }
 

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace BiuroTurystyczne1.Controllers;
 
@@ -12,11 +13,19 @@ public class AdminController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
-    public AdminController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+    public AdminController(
+        UserManager<IdentityUser> userManager, 
+        RoleManager<IdentityRole> roleManager,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _configuration = configuration;
+        _environment = environment;
     }
 
     [HttpGet("users")]
@@ -126,8 +135,102 @@ public class AdminController : ControllerBase
         var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
         return Ok(roles);
     }
+
+    /// <summary>
+    /// Pobiera ustawienia firmy (dane sprzedawcy na fakturach)
+    /// </summary>
+    [HttpGet("firm-settings")]
+    public IActionResult GetFirmSettings()
+    {
+        var settings = new FirmSettingsDto
+        {
+            NazwaFirmy = _configuration["FirmSettings:NazwaFirmy"] ?? "",
+            Adres = _configuration["FirmSettings:Adres"] ?? "",
+            NIP = _configuration["FirmSettings:NIP"] ?? "",
+            Telefon = _configuration["FirmSettings:Telefon"] ?? "",
+            Bank = _configuration["FirmSettings:Bank"] ?? "",
+            NumerKonta = _configuration["FirmSettings:NumerKonta"] ?? "",
+            MiejsceWystawienia = _configuration["FirmSettings:MiejsceWystawienia"] ?? "",
+            EmailKsiegowosci = _configuration["FirmSettings:EmailKsiegowosci"] ?? ""
+        };
+        
+        return Ok(settings);
+    }
+
+    /// <summary>
+    /// Zapisuje ustawienia firmy do pliku JSON
+    /// </summary>
+    [HttpPut("firm-settings")]
+    public async Task<IActionResult> UpdateFirmSettings([FromBody] FirmSettingsDto settings)
+    {
+        try
+        {
+            var appSettingsPath = Path.Combine(_environment.ContentRootPath, "appsettings.json");
+            
+            if (!System.IO.File.Exists(appSettingsPath))
+            {
+                return NotFound(new { message = "Nie znaleziono pliku konfiguracyjnego" });
+            }
+
+            var jsonString = await System.IO.File.ReadAllTextAsync(appSettingsPath);
+            using var jsonDoc = JsonDocument.Parse(jsonString);
+            
+            var options = new JsonWriterOptions { Indented = true };
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream, options))
+            {
+                writer.WriteStartObject();
+                
+                foreach (var property in jsonDoc.RootElement.EnumerateObject())
+                {
+                    if (property.Name == "FirmSettings")
+                    {
+                        writer.WritePropertyName("FirmSettings");
+                        writer.WriteStartObject();
+                        writer.WriteString("NazwaFirmy", settings.NazwaFirmy);
+                        writer.WriteString("Adres", settings.Adres);
+                        writer.WriteString("NIP", settings.NIP);
+                        writer.WriteString("Telefon", settings.Telefon);
+                        writer.WriteString("Bank", settings.Bank);
+                        writer.WriteString("NumerKonta", settings.NumerKonta);
+                        writer.WriteString("MiejsceWystawienia", settings.MiejsceWystawienia);
+                        writer.WriteString("EmailKsiegowosci", settings.EmailKsiegowosci);
+                        writer.WriteEndObject();
+                    }
+                    else
+                    {
+                        property.WriteTo(writer);
+                    }
+                }
+                
+                writer.WriteEndObject();
+            }
+            
+            var newJsonString = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            await System.IO.File.WriteAllTextAsync(appSettingsPath, newJsonString);
+            
+            return Ok(new { message = "Ustawienia firmy zostały zapisane. Restart serwera może być wymagany." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = $"Błąd podczas zapisywania ustawień: {ex.Message}" });
+        }
+    }
 }
 
 public record CreateUserDto(string Email, string Password, string? Role);
 public record UpdateUserDto(string Email, string? Role);
 public record ResetPasswordDto(string NewPassword);
+
+public class FirmSettingsDto
+{
+    public string NazwaFirmy { get; set; } = "";
+    public string Adres { get; set; } = "";
+    public string NIP { get; set; } = "";
+    public string Telefon { get; set; } = "";
+    public string Bank { get; set; } = "";
+    public string NumerKonta { get; set; } = "";
+    public string MiejsceWystawienia { get; set; } = "";
+    public string EmailKsiegowosci { get; set; } = "";
+}
+

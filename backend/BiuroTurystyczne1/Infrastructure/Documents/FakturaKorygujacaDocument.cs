@@ -10,36 +10,26 @@ using System.Globalization;
 
 namespace BiuroTurystyczne1.Infrastructure.Documents;
 
-public class FirmSettings
+public class FakturaKorygujacaDocument : IDocument
 {
-    public string NazwaFirmy { get; set; } = "NAUCZYCIELSKIE BIURO TURYSTYCZNE \"BELFEREK\" EWA KUSTRA";
-    public string Adres { get; set; } = "al. Juliusza Słowackiego 52, 30-018 Kraków";
-    public string NIP { get; set; } = "677 129 04 82";
-    public string Telefon { get; set; } = "+48 575 550 302";
-    public string Bank { get; set; } = "SANTANDER BANK POLSKA S.A";
-    public string NumerKonta { get; set; } = "24 1090 2053 0000 0001 1444 5232";
-    public string MiejsceWystawienia { get; set; } = "KRAKÓW";
-    public string? LogoPath { get; set; } = null;
-}
-
-public class FakturaVatDocument : IDocument
-{
-    private readonly FakturaVat _faktura;
+    private readonly FakturaVat _korekta;
+    private readonly FakturaVat _oryginalnaFaktura;
     private readonly Uzytkownik _wystawiajacy;
     private readonly FirmSettings _firmSettings;
     
     private static readonly string CalibriRegularPath = Path.Combine("Resources", "calibri.ttf");
     private static readonly string CalibriBoldPath = Path.Combine("Resources", "calibrib.ttf");
     
-    static FakturaVatDocument()
+    static FakturaKorygujacaDocument()
     {
         FontManager.RegisterFont(File.OpenRead(CalibriRegularPath));
         FontManager.RegisterFont(File.OpenRead(CalibriBoldPath));
     }
 
-    public FakturaVatDocument(FakturaVat faktura, Uzytkownik wystawiajacy, FirmSettings? firmSettings = null)
+    public FakturaKorygujacaDocument(FakturaVat korekta, FakturaVat oryginalnaFaktura, Uzytkownik wystawiajacy, FirmSettings? firmSettings = null)
     {
-        _faktura = faktura;
+        _korekta = korekta;
+        _oryginalnaFaktura = oryginalnaFaktura;
         _wystawiajacy = wystawiajacy;
         _firmSettings = firmSettings ?? new FirmSettings();
     }
@@ -74,17 +64,22 @@ public class FakturaVatDocument : IDocument
 
             row.RelativeItem().PaddingLeft(20).Column(column =>
             {
-                column.Item().AlignRight().Text("FAKTURA VAT").Bold().FontSize(20).FontColor(Colors.Grey.Medium);
+                column.Item().AlignRight().Text("FAKTURA KORYGUJĄCA").Bold().FontSize(18).FontColor(Colors.Red.Medium);
                 column.Item().AlignRight().Text(versionLabel).Bold().FontSize(12).FontColor(Colors.Grey.Medium);
                 column.Item().AlignRight().Text(text =>
                 {
-                    text.Span("NR: ").SemiBold();
-                    text.Span(_faktura.NumerFaktury);
+                    text.Span("NR KOREKTY: ").SemiBold();
+                    text.Span(_korekta.NumerFaktury);
+                });
+                column.Item().AlignRight().Text(text =>
+                {
+                    text.Span("DO FAKTURY: ").SemiBold();
+                    text.Span(_oryginalnaFaktura.NumerFaktury);
                 });
                 column.Item().AlignRight().Text(text =>
                 {
                     text.Span("DATA WYSTAWIENIA: ").SemiBold();
-                    text.Span($"{_faktura.DataWystawienia:dd.MM.yyyy}");
+                    text.Span($"{_korekta.DataWystawienia:dd.MM.yyyy}");
                 });
                 column.Item().AlignRight().Text(text =>
                 {
@@ -99,7 +94,14 @@ public class FakturaVatDocument : IDocument
     {
         container.PaddingVertical(20).Column(column =>
         {
-            column.Spacing(30);
+            column.Spacing(20);
+            
+            // Powód korekty
+            column.Item().Background(Colors.Yellow.Lighten4).Padding(10).Column(col =>
+            {
+                col.Item().Text("POWÓD KOREKTY:").Bold().FontSize(11);
+                col.Item().Text(_korekta.PowodKorekty ?? "Nie podano").FontSize(10);
+            });
             
             column.Item().Row(row =>
             {
@@ -115,10 +117,10 @@ public class FakturaVatDocument : IDocument
                 row.RelativeItem(4.5f).AlignRight().Column(col =>
                 {
                     col.Item().Text("NABYWCA:").SemiBold();
-                    col.Item().Text(_faktura.IdKontrahentNavigation.NazwaFirmy);
-                    col.Item().Text($"NIP: {_faktura.IdKontrahentNavigation.Nip}");
-                    col.Item().Text($"ADRES: {_faktura.IdKontrahentNavigation.Ulica}");
-                    col.Item().Text($"{_faktura.IdKontrahentNavigation.KodPocztowy} {_faktura.IdKontrahentNavigation.Miejscowosc}");
+                    col.Item().Text(_korekta.IdKontrahentNavigation.NazwaFirmy);
+                    col.Item().Text($"NIP: {_korekta.IdKontrahentNavigation.Nip}");
+                    col.Item().Text($"ADRES: {_korekta.IdKontrahentNavigation.Ulica}");
+                    col.Item().Text($"{_korekta.IdKontrahentNavigation.KodPocztowy} {_korekta.IdKontrahentNavigation.Miejscowosc}");
                 });
             });
             
@@ -138,11 +140,12 @@ public class FakturaVatDocument : IDocument
                     header.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).Background(Colors.Grey.Lighten3).AlignCenter().Text($"BANK: {_firmSettings.Bank}");
                 });
                 
-                table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(_faktura.FormaPlatnosci);
-                table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text($"{_faktura.TerminPlatnosci:dd.MM.yyyy}");
+                table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(_korekta.FormaPlatnosci);
+                table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text($"{_korekta.TerminPlatnosci:dd.MM.yyyy}");
                 table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text($"KONTO: {_firmSettings.NumerKonta}").Bold();
             });
 
+            // Tabela pozycji korygujących
             column.Item().Table(table =>
             {
                 table.ColumnsDefinition(columns =>
@@ -169,25 +172,30 @@ public class FakturaVatDocument : IDocument
                     header.Cell().Background(Colors.Grey.Lighten3).AlignCenter().PaddingVertical(2).Text("WARTOŚĆ\nBRUTTO ZŁ").FontSize(8);
                 });
                 
-                // Pozycje faktury
+                // Pozycje korekty - mogą mieć wartości ujemne
                 var index = 1;
-                foreach (var pozycja in _faktura.FakturaVatPozycjas)
+                foreach (var pozycja in _korekta.FakturaVatPozycjas)
                 {
                     var wartoscNetto = pozycja.CenaNetto * pozycja.Ilosc;
                     var kwotaVat = wartoscNetto * (pozycja.StawkaVat / 100);
                     var wartoscBrutto = wartoscNetto + kwotaVat;
                     
+                    // Podświetl ujemne wartości na czerwono
+                    var textColor = wartoscBrutto < 0 ? Colors.Red.Medium : Colors.Black;
+                    
                     table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text((index++).ToString());
                     table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).PaddingLeft(4).AlignLeft().Text(pozycja.IdUslugaNavigation.NazwaUslugi);
-                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(pozycja.Ilosc.ToString("N0"));
-                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(wartoscBrutto.ToString("N2"));
-                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(wartoscNetto.ToString("N2"));
+                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(pozycja.Ilosc.ToString("N2")).FontColor(textColor);
+                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text((wartoscBrutto / pozycja.Ilosc).ToString("N2")).FontColor(textColor);
+                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(wartoscNetto.ToString("N2")).FontColor(textColor);
                     table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text($"{pozycja.StawkaVat:N0}%");
-                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(kwotaVat.ToString("N2"));
-                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(wartoscBrutto.ToString("N2"));
+                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(kwotaVat.ToString("N2")).FontColor(textColor);
+                    table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).AlignCenter().Text(wartoscBrutto.ToString("N2")).FontColor(textColor);
                 }
                 
-                // RAZEM końcowe (bez podsumowań per stawka VAT)
+                // RAZEM końcowe
+                var razemColor = _korekta.KwotaBrutto < 0 ? Colors.Red.Medium : Colors.Black;
+                
                 table.Cell().ColumnSpan(4).Border(0.5f).BorderColor(Colors.Grey.Medium)
                     .Background(Colors.Grey.Lighten3)
                     .AlignRight().PaddingRight(4)
@@ -196,24 +204,25 @@ public class FakturaVatDocument : IDocument
                 table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium)
                     .Background(Colors.Grey.Lighten3)
                     .AlignCenter()
-                    .Text($"{_faktura.KwotaNetto:N2}").Bold();
+                    .Text($"{_korekta.KwotaNetto:N2}").Bold().FontColor(razemColor);
                 
                 table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium)
                     .Background(Colors.Grey.Lighten3)
                     .AlignCenter()
-                    .Text(""); // Puste pole
+                    .Text("");
                 
                 table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium)
                     .Background(Colors.Grey.Lighten3)
                     .AlignCenter()
-                    .Text($"{_faktura.KwotaVat:N2}").Bold();
+                    .Text($"{_korekta.KwotaVat:N2}").Bold().FontColor(razemColor);
                 
                 table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium)
                     .Background(Colors.Grey.Lighten3)
                     .AlignCenter()
-                    .Text($"{_faktura.KwotaBrutto:N2}").Bold();
+                    .Text($"{_korekta.KwotaBrutto:N2}").Bold().FontColor(razemColor);
             });
             
+            // Podsumowanie korekty
             column.Item().PaddingTop(20).Table(table =>
             {
                 table.ColumnsDefinition(columns =>
@@ -222,10 +231,15 @@ public class FakturaVatDocument : IDocument
                     columns.RelativeColumn();
                 });
                 
-                table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).Padding(8).Text($"Razem: {_faktura.KwotaBrutto:N2} ZŁ").FontSize(14);
-                table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).Padding(8).AlignRight().Text($"Pozostało do zapłaty: {(_faktura.KwotaBrutto - _faktura.Zaplacono):N2} ZŁ").Bold().FontSize(14);
+                var kwotaKorekty = _korekta.KwotaBrutto;
+                var czyDoZwrotu = kwotaKorekty < 0;
+                var etykieta = czyDoZwrotu ? "DO ZWROTU:" : "DO DOPŁATY:";
+                var kwotaColor = czyDoZwrotu ? Colors.Red.Medium : Colors.Green.Medium;
                 
-                var kwotaSlownie = KwotaSlownie(_faktura.KwotaBrutto);
+                table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).Padding(8).Text($"Razem korekta: {kwotaKorekty:N2} ZŁ").FontSize(14).FontColor(kwotaColor);
+                table.Cell().Border(0.5f).BorderColor(Colors.Grey.Medium).Padding(8).AlignRight().Text($"{etykieta} {Math.Abs(kwotaKorekty):N2} ZŁ").Bold().FontSize(14).FontColor(kwotaColor);
+                
+                var kwotaSlownie = KwotaSlownie(Math.Abs(kwotaKorekty));
                 
                 table.Cell().ColumnSpan(2).Border(0.5f).BorderColor(Colors.Grey.Medium).Padding(8).Text($"Słownie: {kwotaSlownie}").FontSize(12);
             });
@@ -253,16 +267,13 @@ public class FakturaVatDocument : IDocument
         });
     }
 
-    // Prawidłowa odmiana polskich groszy
     private static string GetPolishPlural(int number, string singular, string plural2_4, string plural5)
     {
-        // Obsługa wyjątków dla liczb 11-14
         if (number % 100 >= 11 && number % 100 <= 14)
         {
             return plural5;
         }
 
-        // Sprawdź ostatnią cyfrę
         int lastDigit = number % 10;
 
         if (lastDigit == 1)
@@ -279,7 +290,6 @@ public class FakturaVatDocument : IDocument
         }
     }
 
-    // Konwersja kwoty na słowa z prawidłową odmianą
     private static string KwotaSlownie(decimal kwota)
     {
         var culture = new CultureInfo("pl");
@@ -289,7 +299,6 @@ public class FakturaVatDocument : IDocument
 
         string result = "";
 
-        // Złote
         if (zlote == 0)
         {
             result = "zero złotych";
@@ -301,7 +310,6 @@ public class FakturaVatDocument : IDocument
             result = $"{zloteWords} {zloteForm}";
         }
 
-        // Grosze
         if (grosze > 0)
         {
             string groszeWords = grosze.ToWords(culture);
@@ -312,3 +320,4 @@ public class FakturaVatDocument : IDocument
         return result;
     }
 }
+

@@ -12,6 +12,9 @@ interface Faktura {
     dataWystawienia: string;
     kwotaBrutto: number;
     nazwaKontrahenta: string;
+    typDokumentu: string;
+    oryginalnaFakturaId: number | null;
+    numerFakturyOryginalnej: string | null;
 }
 
 type SortField = 'numerFaktury' | 'dataWystawienia' | 'nazwaKontrahenta' | 'kwotaBrutto';
@@ -27,21 +30,26 @@ const FakturyListPage = () => {
     const [showEmailModal, setShowEmailModal] = useState(false);
     const [sortField, setSortField] = useState<SortField>('dataWystawienia');
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+    const [filterKontrahent, setFilterKontrahent] = useState('');
 
-    // ⭐ POPRAWIONE: usunięto showToast z dependency array
     const fetchFaktury = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await apiClient.get('/api/fakturyvat');
+            const params = new URLSearchParams();
+            if (filterKontrahent.trim()) {
+                params.append('kontrahent', filterKontrahent.trim());
+            }
+            const url = `/api/fakturyvat${params.toString() ? '?' + params.toString() : ''}`;
+            const response = await apiClient.get(url);
             setFaktury(response.data);
         } catch (err) {
             setError('Nie udało się pobrać listy faktur.');
-            showToast('Nie udało się pobrać listy faktur.', 'error');  // ⭐ DODANE
+            showToast('Nie udało się pobrać listy faktur.', 'error');
             console.error(err);
         } finally {
             setLoading(false);
         }
-    }, []);  // ⭐ Pusta tablica
+    }, [filterKontrahent]);
 
     useEffect(() => {
         fetchFaktury();
@@ -137,14 +145,23 @@ const FakturyListPage = () => {
 
     const handleEdit = () => {
         if (selectedIds.length === 0) {
-            showToast('Wybierz fakturę do edycji', 'warning');
+            showToast('Wybierz fakturę', 'warning');
             return;
         }
         if (selectedIds.length > 1) {
-            showToast('Wybierz tylko jedną fakturę do edycji', 'warning');
+            showToast('Wybierz tylko jedną fakturę', 'warning');
             return;
         }
-        navigate(`/faktury/edytuj/${selectedIds[0]}`); // ⭐ Przekierowanie do edycji
+        
+        // Sprawdź czy wybrana faktura nie jest już korektą
+        const selectedFaktura = faktury.find(f => f.idFaktura === selectedIds[0]);
+        if (selectedFaktura?.typDokumentu === 'KOREKTA') {
+            showToast('Nie można wystawić korekty do faktury korygującej', 'warning');
+            return;
+        }
+        
+        // Przekierowanie do tworzenia korekty
+        navigate(`/faktury/korekta/${selectedIds[0]}`);
     };
 
 
@@ -209,7 +226,42 @@ const FakturyListPage = () => {
         <div className="page-container">
             <header className="page-header">
                 <h1>Faktury VAT</h1>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {/* Filtr po kontrahentach */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <input
+                            type="text"
+                            placeholder="🔍 Filtruj po kontrahentach..."
+                            value={filterKontrahent}
+                            onChange={(e) => setFilterKontrahent(e.target.value)}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                borderRadius: '6px',
+                                border: '1px solid #4a5568',
+                                backgroundColor: '#2d3748',
+                                color: '#fff',
+                                minWidth: '220px',
+                                fontSize: '0.9rem'
+                            }}
+                        />
+                        {filterKontrahent && (
+                            <button
+                                onClick={() => setFilterKontrahent('')}
+                                style={{
+                                    padding: '0.5rem 0.75rem',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    backgroundColor: '#4a5568',
+                                    color: '#fff',
+                                    cursor: 'pointer',
+                                    fontSize: '0.9rem'
+                                }}
+                                title="Wyczyść filtr"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
                     <button
                         className="btn btn-secondary"
                         onClick={handleViewPdf}
@@ -224,7 +276,7 @@ const FakturyListPage = () => {
                         disabled={selectedIds.length !== 1}
                         style={{ opacity: selectedIds.length !== 1 ? 0.5 : 1 }}
                     >
-                        ✏️ Edytuj
+                        📝 Wystaw korektę
                     </button>
                     <button
                         className="btn btn-primary"
@@ -244,6 +296,13 @@ const FakturyListPage = () => {
                     </button>
                     <Link to="/faktury/nowa" className="btn btn-primary">
                         ➕ Wystaw nową fakturę
+                    </Link>
+                    <Link 
+                        to={`/raporty/${new Date().getFullYear()}/${new Date().getMonth() + 1}`} 
+                        className="btn btn-secondary"
+                        style={{ backgroundColor: '#667eea' }}
+                    >
+                        📊 Raport miesiąca
                     </Link>
                 </div>
             </header>
@@ -282,36 +341,73 @@ const FakturyListPage = () => {
                     >
                         Kwota Brutto{getSortIcon('kwotaBrutto')}
                     </th>
+                    <th>Typ</th>
+                    <th>Koryguje</th>
                 </tr>
                 </thead>
                 <tbody>
                 {sortedFaktury.length === 0 ? (
                     <tr>
-                        <td colSpan={5}>Brak wystawionych faktur.</td>
+                        <td colSpan={7}>{filterKontrahent ? 'Brak faktur dla podanego kontrahenta.' : 'Brak wystawionych faktur.'}</td>
                     </tr>
                 ) : (
-                    sortedFaktury.map((faktura) => (
-                        <tr
-                            key={faktura.idFaktura}
-                            style={{
-                                backgroundColor: selectedIds.includes(faktura.idFaktura) ? '#4a5568' : 'transparent',
-                                cursor: 'pointer'
-                            }}
-                            onClick={() => toggleSelect(faktura.idFaktura)}
-                        >
-                            <td onClick={(e) => e.stopPropagation()}>
-                                <input
-                                    type="checkbox"
-                                    checked={selectedIds.includes(faktura.idFaktura)}
-                                    onChange={() => toggleSelect(faktura.idFaktura)}
-                                />
-                            </td>
-                            <td>{faktura.numerFaktury}</td>
-                            <td>{new Date(faktura.dataWystawienia).toLocaleDateString()}</td>
-                            <td>{faktura.nazwaKontrahenta}</td>
-                            <td>{faktura.kwotaBrutto.toFixed(2)} zł</td>
-                        </tr>
-                    ))
+                    sortedFaktury.map((faktura) => {
+                        const isKorekta = faktura.typDokumentu === 'KOREKTA';
+                        return (
+                            <tr
+                                key={faktura.idFaktura}
+                                style={{
+                                    backgroundColor: selectedIds.includes(faktura.idFaktura) 
+                                        ? '#4a5568' 
+                                        : isKorekta 
+                                            ? 'rgba(239, 68, 68, 0.1)' 
+                                            : 'transparent',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => toggleSelect(faktura.idFaktura)}
+                            >
+                                <td onClick={(e) => e.stopPropagation()}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.includes(faktura.idFaktura)}
+                                        onChange={() => toggleSelect(faktura.idFaktura)}
+                                    />
+                                </td>
+                                <td>{faktura.numerFaktury}</td>
+                                <td>{new Date(faktura.dataWystawienia).toLocaleDateString()}</td>
+                                <td>{faktura.nazwaKontrahenta}</td>
+                                <td style={{ color: faktura.kwotaBrutto < 0 ? '#ef4444' : 'inherit' }}>
+                                    {faktura.kwotaBrutto.toFixed(2)} zł
+                                </td>
+                                <td>
+                                    <span style={{
+                                        padding: '2px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.85em',
+                                        backgroundColor: isKorekta ? '#fee2e2' : '#d1fae5',
+                                        color: isKorekta ? '#dc2626' : '#059669'
+                                    }}>
+                                        {faktura.typDokumentu || 'FAKTURA'}
+                                    </span>
+                                </td>
+                                <td>
+                                    {isKorekta && faktura.numerFakturyOryginalnej ? (
+                                        <span style={{
+                                            padding: '2px 8px',
+                                            borderRadius: '4px',
+                                            fontSize: '0.85em',
+                                            backgroundColor: '#fef3c7',
+                                            color: '#92400e'
+                                        }}>
+                                            {faktura.numerFakturyOryginalnej}
+                                        </span>
+                                    ) : (
+                                        <span style={{ color: '#6b7280' }}>—</span>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })
                 )}
                 </tbody>
             </table>
