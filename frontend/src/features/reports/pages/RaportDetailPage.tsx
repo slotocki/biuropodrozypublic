@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '@/common/api/apiClient';
 import { useNotification } from '@/common/context/NotificationContext';
@@ -43,6 +43,8 @@ interface RaportMiesieczny {
     faktury: FakturaRaport[];
 }
 
+const ROWS_OPTIONS = [10, 25, 50, 100];
+
 const RaportDetailPage = () => {
     const { rok, miesiac } = useParams<{ rok: string; miesiac: string }>();
     const navigate = useNavigate();
@@ -50,6 +52,10 @@ const RaportDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [raport, setRaport] = useState<RaportMiesieczny | null>(null);
+    
+    // Paginacja dla listy dokumentów
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const fetchRaport = useCallback(async () => {
         if (!rok || !miesiac) return;
@@ -116,6 +122,24 @@ const RaportDetailPage = () => {
             style: 'currency',
             currency: 'PLN'
         }).format(value);
+    };
+
+    // Paginacja dla listy dokumentów
+    const totalPages = raport ? Math.ceil(raport.faktury.length / rowsPerPage) : 0;
+    const paginatedFaktury = useMemo(() => {
+        if (!raport) return [];
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        return raport.faktury.slice(startIndex, startIndex + rowsPerPage);
+    }, [raport, currentPage, rowsPerPage]);
+
+    const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setRowsPerPage(Number(e.target.value));
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage < 1 || newPage > totalPages) return;
+        setCurrentPage(newPage);
     };
 
     // Oblicz maksymalną wartość dla wykresu
@@ -357,43 +381,54 @@ const RaportDetailPage = () => {
                         </div>
                     )}
 
-                    {/* Lista faktur */}
-                    <div style={{
-                        backgroundColor: '#2d3748',
-                        borderRadius: '12px',
-                        padding: '1.5rem'
-                    }}>
+                    {/* Lista faktur - styl jak w FakturyListPage */}
+                    <div>
                         <h3 style={{ color: '#e2e8f0', margin: '0 0 1rem 0' }}>
                             📋 Lista dokumentów ({raport.faktury.length})
                         </h3>
-                        <div style={{ overflowX: 'auto' }}>
-                            <table className="data-table">
+                        <div style={{
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+                            borderRadius: '8px',
+                            overflow: 'hidden'
+                        }}>
+                            <table style={{ 
+                                width: '100%', 
+                                borderCollapse: 'collapse',
+                                backgroundColor: '#1e2533'
+                            }}>
                                 <thead>
-                                    <tr>
-                                        <th>Numer</th>
-                                        <th>Data</th>
-                                        <th>Kontrahent</th>
-                                        <th>NIP</th>
-                                        <th style={{ textAlign: 'right' }}>Netto</th>
-                                        <th style={{ textAlign: 'right' }}>VAT</th>
-                                        <th style={{ textAlign: 'right' }}>Brutto</th>
-                                        <th>Typ</th>
+                                    <tr style={{ backgroundColor: '#2d3748' }}>
+                                        <th style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'left' }}>Numer</th>
+                                        <th style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'left' }}>Data</th>
+                                        <th style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'left' }}>Kontrahent</th>
+                                        <th style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'left' }}>NIP</th>
+                                        <th style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'right' }}>Netto</th>
+                                        <th style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'right' }}>VAT</th>
+                                        <th style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'right' }}>Brutto</th>
+                                        <th style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'center' }}>Typ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {raport.faktury.map((f) => {
+                                    {paginatedFaktury.map((f, index) => {
                                         const isKorekta = f.typDokumentu === 'KOREKTA';
+                                        const rowBg = isKorekta 
+                                            ? 'rgba(252, 129, 129, 0.08)' 
+                                            : index % 2 === 0 
+                                                ? '#1e2533' 
+                                                : '#252d3d';
                                         return (
                                             <tr
                                                 key={f.idFaktura}
                                                 style={{
-                                                    backgroundColor: isKorekta ? 'rgba(239, 68, 68, 0.1)' : 'transparent'
+                                                    backgroundColor: rowBg,
+                                                    transition: 'background-color 0.15s ease'
                                                 }}
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3a4556'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = rowBg}
                                             >
-                                                <td>
+                                                <td style={{ padding: '0.6rem 0.75rem' }}>
                                                     <span
                                                         onClick={() => {
-                                                            // Otwórz PDF faktury w nowej karcie
                                                             apiClient.get(`/api/fakturyvat/${f.idFaktura}/pdf`, { responseType: 'blob' })
                                                                 .then(response => {
                                                                     const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -412,8 +447,8 @@ const RaportDetailPage = () => {
                                                         {f.numerFaktury}
                                                     </span>
                                                 </td>
-                                                <td>{new Date(f.dataWystawienia).toLocaleDateString()}</td>
-                                                <td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#e2e8f0' }}>{new Date(f.dataWystawienia).toLocaleDateString()}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem' }}>
                                                     <span
                                                         onClick={() => navigate(`/kontrahenci?search=${encodeURIComponent(f.nazwaKontrahenta)}`)}
                                                         style={{
@@ -426,27 +461,33 @@ const RaportDetailPage = () => {
                                                         {f.nazwaKontrahenta}
                                                     </span>
                                                 </td>
-                                                <td>{f.nipKontrahenta}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#a0aec0' }}>{f.nipKontrahenta}</td>
                                                 <td style={{ 
+                                                    padding: '0.6rem 0.75rem',
                                                     textAlign: 'right',
-                                                    color: f.kwotaNetto < 0 ? '#fc8181' : 'inherit'
+                                                    color: f.kwotaNetto < 0 ? '#fc8181' : '#e2e8f0',
+                                                    fontVariantNumeric: 'tabular-nums'
                                                 }}>
                                                     {formatCurrency(f.kwotaNetto)}
                                                 </td>
                                                 <td style={{ 
+                                                    padding: '0.6rem 0.75rem',
                                                     textAlign: 'right',
-                                                    color: f.kwotaVat < 0 ? '#fc8181' : 'inherit'
+                                                    color: f.kwotaVat < 0 ? '#fc8181' : '#e2e8f0',
+                                                    fontVariantNumeric: 'tabular-nums'
                                                 }}>
                                                     {formatCurrency(f.kwotaVat)}
                                                 </td>
                                                 <td style={{ 
+                                                    padding: '0.6rem 0.75rem',
                                                     textAlign: 'right',
                                                     fontWeight: 'bold',
-                                                    color: f.kwotaBrutto < 0 ? '#fc8181' : 'inherit'
+                                                    color: f.kwotaBrutto < 0 ? '#fc8181' : '#e2e8f0',
+                                                    fontVariantNumeric: 'tabular-nums'
                                                 }}>
                                                     {formatCurrency(f.kwotaBrutto)}
                                                 </td>
-                                                <td>
+                                                <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                     <span style={{
                                                         padding: '2px 8px',
                                                         borderRadius: '4px',
@@ -462,30 +503,145 @@ const RaportDetailPage = () => {
                                     })}
                                 </tbody>
                                 <tfoot>
-                                    <tr style={{ backgroundColor: '#1a202c', fontWeight: 'bold' }}>
-                                        <td colSpan={4}>RAZEM</td>
+                                    <tr style={{ backgroundColor: '#1a202c' }}>
+                                        <td colSpan={4} style={{ padding: '0.75rem', color: '#e2e8f0', fontWeight: 'bold' }}>RAZEM</td>
                                         <td style={{ 
+                                            padding: '0.75rem',
                                             textAlign: 'right',
-                                            color: raport.sumaNetto < 0 ? '#fc8181' : '#68d391'
+                                            fontWeight: 'bold',
+                                            color: raport.sumaNetto < 0 ? '#fc8181' : '#68d391',
+                                            fontVariantNumeric: 'tabular-nums'
                                         }}>
                                             {formatCurrency(raport.sumaNetto)}
                                         </td>
                                         <td style={{ 
+                                            padding: '0.75rem',
                                             textAlign: 'right',
-                                            color: raport.sumaVat < 0 ? '#fc8181' : '#68d391'
+                                            fontWeight: 'bold',
+                                            color: raport.sumaVat < 0 ? '#fc8181' : '#68d391',
+                                            fontVariantNumeric: 'tabular-nums'
                                         }}>
                                             {formatCurrency(raport.sumaVat)}
                                         </td>
                                         <td style={{ 
+                                            padding: '0.75rem',
                                             textAlign: 'right',
-                                            color: raport.sumaBrutto < 0 ? '#fc8181' : '#68d391'
+                                            fontWeight: 'bold',
+                                            color: raport.sumaBrutto < 0 ? '#fc8181' : '#68d391',
+                                            fontVariantNumeric: 'tabular-nums'
                                         }}>
                                             {formatCurrency(raport.sumaBrutto)}
                                         </td>
-                                        <td></td>
+                                        <td style={{ padding: '0.75rem' }}></td>
                                     </tr>
                                 </tfoot>
                             </table>
+                        </div>
+
+                        {/* Paginacja na dole - identyczna jak w FakturyListPage */}
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginTop: '1rem',
+                            padding: '0.75rem 0',
+                            color: '#a0aec0',
+                            fontSize: '0.9rem'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span>Pokaż</span>
+                                <select
+                                    value={rowsPerPage}
+                                    onChange={handleRowsPerPageChange}
+                                    style={{
+                                        padding: '0.4rem 1.8rem 0.4rem 0.6rem',
+                                        borderRadius: '4px',
+                                        border: '1px solid #4a5568',
+                                        backgroundColor: '#2d3748',
+                                        color: '#fff',
+                                        fontSize: '0.85rem',
+                                        cursor: 'pointer',
+                                        appearance: 'none',
+                                        WebkitAppearance: 'none',
+                                        MozAppearance: 'none',
+                                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0aec0' d='M6 8L2 4h8z'/%3E%3C/svg%3E")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 0.5rem center',
+                                        backgroundSize: '12px'
+                                    }}
+                                >
+                                    {ROWS_OPTIONS.map(option => (
+                                        <option key={option} value={option}>{option}</option>
+                                    ))}
+                                </select>
+                                <span>z {raport.faktury.length} dokumentów</span>
+                            </div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <button
+                                    onClick={() => handlePageChange(1)}
+                                    disabled={currentPage === 1}
+                                    style={{
+                                        padding: '0.4rem 0.6rem',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
+                                        color: currentPage === 1 ? '#6b7280' : '#fff',
+                                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    ««
+                                </button>
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    style={{
+                                        padding: '0.4rem 0.6rem',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
+                                        color: currentPage === 1 ? '#6b7280' : '#fff',
+                                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    «
+                                </button>
+                                <span style={{ padding: '0 0.5rem', color: '#e2e8f0' }}>
+                                    Strona {currentPage} z {totalPages || 1}
+                                </span>
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    style={{
+                                        padding: '0.4rem 0.6rem',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        backgroundColor: currentPage === totalPages || totalPages === 0 ? '#374151' : '#4a5568',
+                                        color: currentPage === totalPages || totalPages === 0 ? '#6b7280' : '#fff',
+                                        cursor: currentPage === totalPages || totalPages === 0 ? 'not-allowed' : 'pointer',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    »
+                                </button>
+                                <button
+                                    onClick={() => handlePageChange(totalPages)}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    style={{
+                                        padding: '0.4rem 0.6rem',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        backgroundColor: currentPage === totalPages || totalPages === 0 ? '#374151' : '#4a5568',
+                                        color: currentPage === totalPages || totalPages === 0 ? '#6b7280' : '#fff',
+                                        cursor: currentPage === totalPages || totalPages === 0 ? 'not-allowed' : 'pointer',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    »»
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </>
