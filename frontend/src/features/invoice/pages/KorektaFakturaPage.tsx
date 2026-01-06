@@ -292,60 +292,38 @@ const KorektaFakturaPage = () => {
                 <h1 style={{ margin: 0, color: '#fc8181' }}>📝 Faktura Korygująca</h1>
             </header>
 
-            {/* Informacja o fakturze oryginalnej */}
+            {/* Informacja o fakturze oryginalnej - niebieski panel */}
             <div style={{ 
                 ...cardStyle,
-                background: 'linear-gradient(135deg, #44337a 0%, #553c9a 100%)',
-                border: '1px solid #805ad5'
+                background: 'linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%)',
+                border: '1px solid #4299e1'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
                     <span style={{ fontSize: '1.5rem' }}>📄</span>
-                    <h3 style={{ margin: 0, color: '#e9d8fd' }}>
+                    <h3 style={{ margin: 0, color: '#bee3f8' }}>
                         Korekta do faktury: <span style={{ color: '#fff', fontWeight: 'bold' }}>{oryginalnaFaktura?.numerFaktury}</span>
                     </h3>
                 </div>
-                <div style={{ display: 'flex', gap: '2rem', color: '#d6bcfa', fontSize: '0.95rem' }}>
+                <div style={{ display: 'flex', gap: '2rem', color: '#90cdf4', fontSize: '0.95rem' }}>
                     <span>📅 Data oryginału: <strong style={{ color: '#fff' }}>{oryginalnaFaktura?.dataWystawienia}</strong></span>
                     <span>💰 Brutto oryginału: <strong style={{ color: '#fff' }}>{oryginalnaFaktura?.kwotaBrutto.toFixed(2)} zł</strong></span>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit}>
-                {/* Powód korekty */}
-                <div style={{ 
-                    ...cardStyle,
-                    background: 'linear-gradient(135deg, #742a2a 0%, #9b2c2c 100%)',
-                    border: '1px solid #fc8181'
-                }}>
-                    <h3 style={{ color: '#fed7d7', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        ⚠️ Powód korekty <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>(wymagany)</span>
-                    </h3>
-                    <textarea
-                        value={powodKorekty}
-                        onChange={e => setPowodKorekty(e.target.value)}
-                        placeholder="Opisz powód wystawienia korekty..."
-                        required
-                        style={{ 
-                            ...inputStyle,
-                            resize: 'vertical',
-                            minHeight: '80px'
-                        }}
-                    />
-                </div>
-
                 {/* Dane korekty i nabywca */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                     {/* Dane korekty */}
                     <div style={cardStyle}>
                         <h3 style={{ color: '#e2e8f0', margin: '0 0 1.25rem 0' }}>📋 Dane korekty</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                             <div>
-                                <label style={labelStyle}>Data wystawienia korekty</label>
+                                <label style={labelStyle}>Data wystawienia</label>
                                 <input 
                                     type="date" 
                                     value={dataWystawienia} 
                                     onChange={e => handleDataWystawieniaChange(e.target.value)}
-                                    style={inputStyle}
+                                    style={{ ...inputStyle, boxSizing: 'border-box' }}
                                 />
                             </div>
                             <div>
@@ -354,7 +332,7 @@ const KorektaFakturaPage = () => {
                                     type="date" 
                                     value={terminPlatnosci} 
                                     onChange={e => setTerminPlatnosci(e.target.value)}
-                                    style={inputStyle}
+                                    style={{ ...inputStyle, boxSizing: 'border-box' }}
                                 />
                             </div>
                             <div>
@@ -362,7 +340,7 @@ const KorektaFakturaPage = () => {
                                 <select 
                                     value={formaPlatnosci} 
                                     onChange={e => handleFormaPlatnosciChange(e.target.value)}
-                                    style={{ ...inputStyle, cursor: 'pointer' }}
+                                    style={{ ...inputStyle, cursor: 'pointer', boxSizing: 'border-box' }}
                                 >
                                     <option value="przelew 3 dni">przelew 3 dni</option>
                                     <option value="przelew 7 dni">przelew 7 dni</option>
@@ -372,29 +350,45 @@ const KorektaFakturaPage = () => {
                                 </select>
                             </div>
                         </div>
+                        {/* Powód korekty przeniesiony tutaj */}
+                        <div style={{ marginTop: '1rem' }}>
+                            <label style={{ ...labelStyle, color: '#fc8181' }}>⚠️ Powód korekty (wymagany)</label>
+                            <textarea
+                                value={powodKorekty}
+                                onChange={e => setPowodKorekty(e.target.value)}
+                                placeholder="Opisz powód wystawienia korekty..."
+                                required
+                                style={{ 
+                                    ...inputStyle,
+                                    resize: 'vertical',
+                                    minHeight: '70px',
+                                    boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
                     </div>
 
-                    {/* Nabywca */}
-                    <div style={cardStyle}>
-                        <h3 style={{ color: '#e2e8f0', margin: '0 0 1.25rem 0' }}>👤 Nabywca</h3>
+                    {/* Nabywca - mniejszy panel */}
+                    <div style={{ ...cardStyle, padding: '1.25rem' }}>
+                        <h3 style={{ color: '#e2e8f0', margin: '0 0 1rem 0', fontSize: '1rem' }}>👤 Nabywca</h3>
                         {kontrahent ? (
                             <div style={{ color: '#e2e8f0' }}>
                                 <div style={{ 
-                                    fontSize: '1.1rem', 
+                                    fontSize: '1rem', 
                                     fontWeight: 'bold', 
-                                    marginBottom: '0.75rem',
+                                    marginBottom: '0.5rem',
                                     color: '#fff'
                                 }}>
                                     {kontrahent.nazwaFirmy}
                                 </div>
-                                <div style={{ color: '#a0aec0', lineHeight: '1.6' }}>
+                                <div style={{ color: '#a0aec0', lineHeight: '1.5', fontSize: '0.9rem' }}>
                                     <div>NIP: {kontrahent.nip}</div>
                                     <div>{kontrahent.ulica}</div>
                                     <div>{kontrahent.kodPocztowy} {kontrahent.miejscowosc}</div>
                                 </div>
                             </div>
                         ) : (
-                            <p style={{ color: '#a0aec0' }}>Brak danych kontrahenta</p>
+                            <p style={{ color: '#a0aec0', margin: 0 }}>Brak danych kontrahenta</p>
                         )}
                     </div>
                 </div>
@@ -440,16 +434,16 @@ const KorektaFakturaPage = () => {
                     </div>
                     
                     <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                             <thead>
                                 <tr style={{ borderBottom: '1px solid #4a5568' }}>
-                                    <th style={{ padding: '0.75rem', textAlign: 'left', color: '#a0aec0' }}>Usługa</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#a0aec0', width: '100px' }}>Ilość</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#a0aec0', width: '120px' }}>Cena netto</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#a0aec0', width: '80px' }}>VAT %</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'right', color: '#a0aec0' }}>Netto</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'right', color: '#a0aec0' }}>Brutto</th>
-                                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#a0aec0', width: '60px' }}></th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'left', color: '#a0aec0', width: '35%' }}>Usługa</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#a0aec0', width: '10%' }}>Ilość</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#a0aec0', width: '12%' }}>Cena netto</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#a0aec0', width: '8%' }}>VAT %</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right', color: '#a0aec0', width: '12%' }}>Netto</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right', color: '#a0aec0', width: '12%' }}>Brutto</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#a0aec0', width: '6%' }}></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -457,6 +451,18 @@ const KorektaFakturaPage = () => {
                                     const wartoscNetto = p.ilosc * p.cenaNetto;
                                     const wartoscBrutto = wartoscNetto * (1 + p.stawkaVat / 100);
                                     const isNegative = wartoscBrutto < 0;
+                                    
+                                    const cellInputStyle = {
+                                        padding: '0.5rem',
+                                        borderRadius: '6px',
+                                        border: '1px solid #4a5568',
+                                        backgroundColor: '#1a202c',
+                                        color: '#fff',
+                                        fontSize: '0.9rem',
+                                        width: '100%',
+                                        boxSizing: 'border-box' as const,
+                                        textAlign: 'center' as const
+                                    };
                                     
                                     return (
                                         <tr 
@@ -466,67 +472,69 @@ const KorektaFakturaPage = () => {
                                                 backgroundColor: isNegative ? 'rgba(252, 129, 129, 0.1)' : 'rgba(104, 211, 145, 0.1)'
                                             }}
                                         >
-                                            <td style={{ padding: '0.75rem', color: '#e2e8f0' }}>{p.nazwaUslugi}</td>
-                                            <td style={{ padding: '0.5rem' }}>
+                                            <td style={{ padding: '0.5rem 0.75rem', color: '#e2e8f0', fontSize: '0.9rem' }}>{p.nazwaUslugi}</td>
+                                            <td style={{ padding: '0.4rem' }}>
                                                 <input 
                                                     type="number" 
                                                     step="any"
                                                     value={p.ilosc} 
                                                     onChange={e => handlePozycjaChange(p.klucz, 'ilosc', Number(e.target.value))}
                                                     style={{ 
-                                                        ...inputStyle, 
-                                                        textAlign: 'center',
+                                                        ...cellInputStyle, 
                                                         color: p.ilosc < 0 ? '#fc8181' : '#68d391',
                                                         fontWeight: 'bold'
                                                     }}
                                                 />
                                             </td>
-                                            <td style={{ padding: '0.5rem' }}>
+                                            <td style={{ padding: '0.4rem' }}>
                                                 <input 
                                                     type="number" 
                                                     step="0.01" 
                                                     value={p.cenaNetto} 
                                                     onChange={e => handlePozycjaChange(p.klucz, 'cenaNetto', Number(e.target.value))}
-                                                    style={{ ...inputStyle, textAlign: 'center' }}
+                                                    style={cellInputStyle}
                                                 />
                                             </td>
-                                            <td style={{ padding: '0.5rem' }}>
+                                            <td style={{ padding: '0.4rem' }}>
                                                 <input 
                                                     type="number" 
                                                     value={p.stawkaVat} 
                                                     onChange={e => handlePozycjaChange(p.klucz, 'stawkaVat', Number(e.target.value))}
-                                                    style={{ ...inputStyle, textAlign: 'center' }}
+                                                    style={cellInputStyle}
                                                 />
                                             </td>
                                             <td style={{ 
-                                                padding: '0.75rem', 
+                                                padding: '0.5rem 0.75rem', 
                                                 textAlign: 'right', 
                                                 color: isNegative ? '#fc8181' : '#68d391',
-                                                fontVariantNumeric: 'tabular-nums'
+                                                fontVariantNumeric: 'tabular-nums',
+                                                fontSize: '0.9rem'
                                             }}>
                                                 {wartoscNetto.toFixed(2)} zł
                                             </td>
                                             <td style={{ 
-                                                padding: '0.75rem', 
+                                                padding: '0.5rem 0.75rem', 
                                                 textAlign: 'right', 
                                                 color: isNegative ? '#fc8181' : '#68d391',
                                                 fontWeight: 'bold',
-                                                fontVariantNumeric: 'tabular-nums'
+                                                fontVariantNumeric: 'tabular-nums',
+                                                fontSize: '0.9rem'
                                             }}>
                                                 {wartoscBrutto.toFixed(2)} zł
                                             </td>
-                                            <td style={{ padding: '0.5rem', textAlign: 'center' }}>
+                                            <td style={{ padding: '0.4rem', textAlign: 'center' }}>
                                                 <button 
                                                     type="button"
                                                     onClick={() => usunPozycje(p.klucz)}
                                                     style={{
-                                                        padding: '0.4rem 0.6rem',
+                                                        padding: '0.35rem 0.5rem',
                                                         borderRadius: '6px',
                                                         border: '2px solid transparent',
                                                         backgroundColor: '#e53e3e',
                                                         color: '#fff',
                                                         cursor: 'pointer',
-                                                        transition: 'all 0.2s'
+                                                        transition: 'all 0.2s',
+                                                        fontSize: '0.85rem'
                                                     }}
                                                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#fc8181'; e.currentTarget.style.transform = 'scale(1.05)'; }}
                                                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
@@ -594,61 +602,68 @@ const KorektaFakturaPage = () => {
                     background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)'
                 }}>
                     <h3 style={{ color: '#e2e8f0', margin: '0 0 1.25rem 0' }}>💰 Podsumowanie korekty</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+                        {/* Kolumna 1: Sumy */}
                         <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid #4a5568' }}>
-                                <span style={{ color: '#a0aec0' }}>Suma netto:</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0', borderBottom: '1px solid #4a5568' }}>
+                                <span style={{ color: '#a0aec0', fontSize: '0.9rem' }}>Suma netto:</span>
                                 <span style={{ color: podsumowanie.sumaNetto < 0 ? '#fc8181' : '#68d391', fontWeight: 'bold', fontVariantNumeric: 'tabular-nums' }}>
                                     {podsumowanie.sumaNetto.toFixed(2)} zł
                                 </span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid #4a5568' }}>
-                                <span style={{ color: '#a0aec0' }}>Suma VAT:</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0', borderBottom: '1px solid #4a5568' }}>
+                                <span style={{ color: '#a0aec0', fontSize: '0.9rem' }}>Suma VAT:</span>
                                 <span style={{ color: podsumowanie.sumaVat < 0 ? '#fc8181' : '#68d391', fontWeight: 'bold', fontVariantNumeric: 'tabular-nums' }}>
                                     {podsumowanie.sumaVat.toFixed(2)} zł
                                 </span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0' }}>
-                                <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.1rem' }}>Suma brutto:</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0' }}>
+                                <span style={{ color: '#fff', fontWeight: 'bold' }}>Suma brutto:</span>
                                 <span style={{ 
                                     color: podsumowanie.sumaBrutto < 0 ? '#fc8181' : '#68d391', 
                                     fontWeight: 'bold', 
-                                    fontSize: '1.25rem',
+                                    fontSize: '1.1rem',
                                     fontVariantNumeric: 'tabular-nums'
                                 }}>
                                     {podsumowanie.sumaBrutto.toFixed(2)} zł
                                 </span>
                             </div>
                         </div>
+
+                        {/* Kolumna 2: Zapłacono */}
                         <div>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={labelStyle}>Zapłacono</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={zaplacono}
-                                    onChange={e => setZaplacono(e.target.value)}
-                                    placeholder="0.00"
-                                    style={{ ...inputStyle, textAlign: 'right' }}
-                                />
+                            <label style={{ ...labelStyle, marginBottom: '0.4rem' }}>Zapłacono:</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={zaplacono}
+                                onChange={e => setZaplacono(e.target.value)}
+                                placeholder="0.00"
+                                style={{ 
+                                    ...inputStyle, 
+                                    textAlign: 'right',
+                                    boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+
+                        {/* Kolumna 3: Do zwrotu/dopłaty */}
+                        <div style={{ 
+                            padding: '1rem',
+                            borderRadius: '8px',
+                            backgroundColor: podsumowanie.doZwrotuLubDoplaty < 0 ? 'rgba(252, 129, 129, 0.2)' : 'rgba(104, 211, 145, 0.2)',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ color: '#a0aec0', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
+                                {podsumowanie.doZwrotuLubDoplaty < 0 ? 'DO ZWROTU' : 'DO DOPŁATY'}
                             </div>
                             <div style={{ 
-                                padding: '1rem',
-                                borderRadius: '8px',
-                                backgroundColor: podsumowanie.doZwrotuLubDoplaty < 0 ? 'rgba(252, 129, 129, 0.2)' : 'rgba(104, 211, 145, 0.2)',
-                                textAlign: 'center'
+                                color: podsumowanie.doZwrotuLubDoplaty < 0 ? '#fc8181' : '#68d391', 
+                                fontWeight: 'bold', 
+                                fontSize: '1.4rem',
+                                fontVariantNumeric: 'tabular-nums'
                             }}>
-                                <div style={{ color: '#a0aec0', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
-                                    {podsumowanie.doZwrotuLubDoplaty < 0 ? 'DO ZWROTU' : 'DO DOPŁATY'}
-                                </div>
-                                <div style={{ 
-                                    color: podsumowanie.doZwrotuLubDoplaty < 0 ? '#fc8181' : '#68d391', 
-                                    fontWeight: 'bold', 
-                                    fontSize: '1.5rem',
-                                    fontVariantNumeric: 'tabular-nums'
-                                }}>
-                                    {Math.abs(podsumowanie.doZwrotuLubDoplaty).toFixed(2)} zł
-                                </div>
+                                {Math.abs(podsumowanie.doZwrotuLubDoplaty).toFixed(2)} zł
                             </div>
                         </div>
                     </div>
