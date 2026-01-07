@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import apiClient from '@/common/api/apiClient';
 import { useNotification } from '@/common/context/NotificationContext';
@@ -10,7 +10,8 @@ import type { Kontrahent } from '@/common/types';
 type SortField = 'nazwaFirmy' | 'nip' | 'email' | 'numerTelefonu';
 type SortDirection = 'asc' | 'desc' | null;
 
-const ROWS_OPTIONS = [15, 30, 50, 100];
+// Definicja dostępnych opcji liczby wierszy
+const ROWS_OPTIONS = [10, 25, 50, 100];
 
 const KontrahenciPage = () => {
     const [searchParams] = useSearchParams();
@@ -26,11 +27,10 @@ const KontrahenciPage = () => {
     const [sortField, setSortField] = useState<SortField | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
-    // Paginacja
-    const [rowsPerPage, setRowsPerPage] = useState(15);
+    // ⭐ POPRAWIONE: Domyślna wartość zgodna z ROWS_OPTIONS
+    const [rowsPerPage, setRowsPerPage] = useState(ROWS_OPTIONS[0]);
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Obsługa parametru search z URL
     useEffect(() => {
         const searchFromUrl = searchParams.get('search');
         if (searchFromUrl) {
@@ -38,7 +38,6 @@ const KontrahenciPage = () => {
         }
     }, [searchParams]);
 
-    // ✅ USUŃ showToast z dependency array
     const fetchKontrahenci = useCallback(async () => {
         setLoading(true);
         try {
@@ -50,7 +49,7 @@ const KontrahenciPage = () => {
         } finally {
             setLoading(false);
         }
-    }, []); // ✅ Pusta tablica zależności
+    }, []);
 
     useEffect(() => {
         fetchKontrahenci();
@@ -107,7 +106,6 @@ const KontrahenciPage = () => {
                 });
 
                 const results = await Promise.all(deletePromises);
-
                 const failed = results.filter(r => !r.success);
                 const succeeded = results.filter(r => r.success);
 
@@ -170,7 +168,7 @@ const KontrahenciPage = () => {
         return result;
     }, [kontrahenci, searchTerm, sortField, sortDirection]);
 
-    // Paginacja
+    // Paginacja logiczna
     const paginatedKontrahenci = useMemo(() => {
         const start = (currentPage - 1) * rowsPerPage;
         const end = start + rowsPerPage;
@@ -186,12 +184,12 @@ const KontrahenciPage = () => {
 
     const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setRowsPerPage(Number(e.target.value));
-        setCurrentPage(1);
+        setCurrentPage(1); // Powrót na pierwszą stronę przy zmianie gęstości danych
     };
 
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
-        setCurrentPage(1);
+        setCurrentPage(1); // Reset strony przy nowym wyszukiwaniu
     };
 
     if (loading) return <p className="loading-text">Ładowanie kontrahentów...</p>;
@@ -209,37 +207,40 @@ const KontrahenciPage = () => {
 
             <header className="page-header">
                 <h1>Kontrahenci</h1>
-                <input
-                    type="text"
-                    placeholder="Szukaj po nazwie lub NIP..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={e => handleSearchChange(e.target.value)}
-                />
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Szukaj po nazwie lub NIP..."
+                        className="search-input"
+                        value={searchTerm}
+                        onChange={e => handleSearchChange(e.target.value)}
+                    />
+                    {selectedIds.length > 0 && (
+                        <>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={handleEdit}
+                                disabled={selectedIds.length !== 1}
+                                style={{ opacity: selectedIds.length !== 1 ? 0.5 : 1 }}
+                            >
+                                ✏️ Edytuj
+                            </button>
+                            <button
+                                className="btn btn-danger"
+                                onClick={handleDelete}
+                            >
+                                🗑️ Usuń ({selectedIds.length})
+                            </button>
+                        </>
+                    )}
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleAddNew}
+                    >
+                        ➕ Dodaj nowego kontrahenta
+                    </button>
+                </div>
             </header>
-
-            <div className="action-buttons">
-                <button
-                    className="btn btn-secondary"
-                    onClick={handleEdit}
-                    disabled={selectedIds.length !== 1}
-                >
-                    ✏️ Edytuj
-                </button>
-                <button
-                    className="btn btn-danger"
-                    onClick={handleDelete}
-                    disabled={selectedIds.length === 0}
-                >
-                    🗑️ Usuń ({selectedIds.length})
-                </button>
-                <button
-                    className="btn btn-primary"
-                    onClick={handleAddNew}
-                >
-                    ➕ Dodaj nowego kontrahenta
-                </button>
-            </div>
 
             <div style={{
                 marginTop: '1rem',
@@ -247,73 +248,39 @@ const KontrahenciPage = () => {
                 borderRadius: '8px',
                 overflow: 'hidden'
             }}>
-                <table className="data-table" style={{ 
-                    width: '100%', 
+                <table className="data-table" style={{
+                    width: '100%',
                     borderCollapse: 'collapse',
                     backgroundColor: '#1e2533'
                 }}>
                     <thead>
                     <tr style={{ backgroundColor: '#2d3748' }}>
-                        <th style={{ 
-                            width: '40px',
-                            padding: '0.75rem',
-                            borderBottom: '1px solid #4a5568',
-                            color: '#e2e8f0',
-                            textAlign: 'left'
-                        }}></th>
+                        <th style={{ width: '40px', padding: '0.75rem', borderBottom: '1px solid #4a5568' }}></th>
                         <th
                             className={`sortable-header ${sortField === 'nazwaFirmy' ? `sorted-${sortDirection}` : ''}`}
                             onClick={() => handleSort('nazwaFirmy')}
-                            style={{
-                                padding: '0.75rem',
-                                borderBottom: '1px solid #4a5568',
-                                color: '#e2e8f0',
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                userSelect: 'none'
-                            }}
+                            style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}
                         >
                             Nazwa Firmy {sortField === 'nazwaFirmy' ? (sortDirection === 'asc' ? '↑' : '↓') : '⇅'}
                         </th>
                         <th
                             className={`sortable-header ${sortField === 'nip' ? `sorted-${sortDirection}` : ''}`}
                             onClick={() => handleSort('nip')}
-                            style={{
-                                padding: '0.75rem',
-                                borderBottom: '1px solid #4a5568',
-                                color: '#e2e8f0',
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                userSelect: 'none'
-                            }}
+                            style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}
                         >
                             NIP {sortField === 'nip' ? (sortDirection === 'asc' ? '↑' : '↓') : '⇅'}
                         </th>
                         <th
                             className={`sortable-header ${sortField === 'email' ? `sorted-${sortDirection}` : ''}`}
                             onClick={() => handleSort('email')}
-                            style={{
-                                padding: '0.75rem',
-                                borderBottom: '1px solid #4a5568',
-                                color: '#e2e8f0',
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                userSelect: 'none'
-                            }}
+                            style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}
                         >
                             Email {sortField === 'email' ? (sortDirection === 'asc' ? '↑' : '↓') : '⇅'}
                         </th>
                         <th
                             className={`sortable-header ${sortField === 'numerTelefonu' ? `sorted-${sortDirection}` : ''}`}
                             onClick={() => handleSort('numerTelefonu')}
-                            style={{
-                                padding: '0.75rem',
-                                borderBottom: '1px solid #4a5568',
-                                color: '#e2e8f0',
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                userSelect: 'none'
-                            }}
+                            style={{ padding: '0.75rem', borderBottom: '1px solid #4a5568', color: '#e2e8f0', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}
                         >
                             Telefon {sortField === 'numerTelefonu' ? (sortDirection === 'asc' ? '↑' : '↓') : '⇅'}
                         </th>
@@ -322,30 +289,18 @@ const KontrahenciPage = () => {
                     <tbody>
                     {paginatedKontrahenci.length === 0 ? (
                         <tr>
-                            <td colSpan={5} style={{ 
-                                padding: '2rem', 
-                                textAlign: 'center', 
-                                color: '#a0aec0' 
-                            }}>
+                            <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: '#a0aec0' }}>
                                 {searchTerm ? 'Brak kontrahentów dla podanych kryteriów.' : 'Brak kontrahentów.'}
                             </td>
                         </tr>
                     ) : (
                         paginatedKontrahenci.map((kontrahent, index) => {
                             const isSelected = selectedIds.includes(kontrahent.idKontrahent);
-                            const rowBg = isSelected 
-                                ? '#4a5568' 
-                                : index % 2 === 0 
-                                    ? '#1e2533' 
-                                    : '#252d3d';
+                            const rowBg = isSelected ? '#4a5568' : index % 2 === 0 ? '#1e2533' : '#252d3d';
                             return (
                                 <tr
                                     key={kontrahent.idKontrahent}
-                                    style={{
-                                        backgroundColor: rowBg,
-                                        cursor: 'pointer',
-                                        transition: 'background-color 0.15s ease'
-                                    }}
+                                    style={{ backgroundColor: rowBg, cursor: 'pointer', transition: 'background-color 0.15s ease' }}
                                     onClick={() => handleRowClick(kontrahent.idKontrahent)}
                                     onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#3a4556'; }}
                                     onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = rowBg; }}
@@ -370,9 +325,9 @@ const KontrahenciPage = () => {
             </div>
 
             {/* Paginacja */}
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 marginTop: '1rem',
                 padding: '0.75rem 0',
@@ -393,82 +348,49 @@ const KontrahenciPage = () => {
                             fontSize: '0.85rem',
                             cursor: 'pointer',
                             appearance: 'none',
-                            WebkitAppearance: 'none',
-                            MozAppearance: 'none',
                             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0aec0' d='M6 8L2 4h8z'/%3E%3C/svg%3E")`,
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'right 0.5rem center',
                             backgroundSize: '12px'
                         }}
                     >
+                        {/* Renderowanie opcji na podstawie tablicy ROWS_OPTIONS */}
                         {ROWS_OPTIONS.map(option => (
                             <option key={option} value={option}>{option}</option>
                         ))}
                     </select>
                     <span>z {filteredAndSortedKontrahenci.length} kontrahentów</span>
                 </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                     <button
                         onClick={() => handlePageChange(1)}
                         disabled={currentPage === 1}
-                        style={{
-                            padding: '0.4rem 0.6rem',
-                            borderRadius: '4px',
-                            border: 'none',
-                            backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
-                            color: currentPage === 1 ? '#6b7280' : '#fff',
-                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                            fontSize: '0.85rem'
-                        }}
+                        className="btn-paging"
                     >
                         ««
                     </button>
                     <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        style={{
-                            padding: '0.4rem 0.6rem',
-                            borderRadius: '4px',
-                            border: 'none',
-                            backgroundColor: currentPage === 1 ? '#374151' : '#4a5568',
-                            color: currentPage === 1 ? '#6b7280' : '#fff',
-                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                            fontSize: '0.85rem'
-                        }}
+                        className="btn-paging"
                     >
                         «
                     </button>
-                    <span style={{ padding: '0 0.5rem', color: '#e2e8f0' }}>
+                    <span style={{ padding: '0 0.8rem', color: '#e2e8f0' }}>
                         Strona {currentPage} z {totalPages || 1}
                     </span>
                     <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages || totalPages === 0}
-                        style={{
-                            padding: '0.4rem 0.6rem',
-                            borderRadius: '4px',
-                            border: 'none',
-                            backgroundColor: currentPage === totalPages || totalPages === 0 ? '#374151' : '#4a5568',
-                            color: currentPage === totalPages || totalPages === 0 ? '#6b7280' : '#fff',
-                            cursor: currentPage === totalPages || totalPages === 0 ? 'not-allowed' : 'pointer',
-                            fontSize: '0.85rem'
-                        }}
+                        className="btn-paging"
                     >
                         »
                     </button>
                     <button
                         onClick={() => handlePageChange(totalPages)}
                         disabled={currentPage === totalPages || totalPages === 0}
-                        style={{
-                            padding: '0.4rem 0.6rem',
-                            borderRadius: '4px',
-                            border: 'none',
-                            backgroundColor: currentPage === totalPages || totalPages === 0 ? '#374151' : '#4a5568',
-                            color: currentPage === totalPages || totalPages === 0 ? '#6b7280' : '#fff',
-                            cursor: currentPage === totalPages || totalPages === 0 ? 'not-allowed' : 'pointer',
-                            fontSize: '0.85rem'
-                        }}
+                        className="btn-paging"
                     >
                         »»
                     </button>

@@ -209,32 +209,44 @@ const KlienciPage = () => {
 
             <header className="page-header">
                 <h1>Klienci</h1>
-                <input
-                    type="text"
-                    placeholder="Szukaj po imieniu lub nazwisku..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={e => handleSearchChange(e.target.value)}
-                />
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Szukaj po imieniu lub nazwisku..."
+                        className="search-input"
+                        value={searchTerm}
+                        onChange={e => handleSearchChange(e.target.value)}
+                    />
+                    {/* Przyciski Edytuj i Usuń - widoczne tylko gdy wybrano klientów */}
+                    {selectedIds.length > 0 && (
+                        <>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={handleEdit}
+                                disabled={selectedIds.length !== 1}
+                                style={{ opacity: selectedIds.length !== 1 ? 0.5 : 1 }}
+                            >
+                                ✏️ Edytuj
+                            </button>
+                            <button
+                                className="btn btn-danger"
+                                onClick={handleDelete}
+                            >
+                                🗑️ Usuń ({selectedIds.length})
+                            </button>
+                        </>
+                    )}
+                    <button className="btn btn-secondary" onClick={handleImport}>
+                        📤 Importuj
+                    </button>
+                    <button className="btn btn-secondary" disabled>
+                        🗺️ Wyświetl mapę
+                    </button>
+                    <button className="btn btn-primary" onClick={handleAddNew}>
+                        ➕ Dodaj klienta
+                    </button>
+                </div>
             </header>
-
-            <div className="action-buttons">
-                <button className="btn btn-secondary" onClick={handleEdit} disabled={selectedIds.length !== 1}>
-                    ✏️ Edytuj
-                </button>
-                <button className="btn btn-danger" onClick={handleDelete} disabled={selectedIds.length === 0}>
-                    🗑️ Usuń ({selectedIds.length})
-                </button>
-                <button className="btn btn-secondary" onClick={handleImport}>
-                    📤 Importuj
-                </button>
-                <button className="btn btn-secondary" disabled>
-                    🗺️ Wyświetl mapę
-                </button>
-                <button className="btn btn-primary" onClick={handleAddNew}>
-                    ➕ Dodaj klienta
-                </button>
-            </div>
 
             <div style={{
                 marginTop: '1rem',
@@ -242,21 +254,21 @@ const KlienciPage = () => {
                 borderRadius: '8px',
                 overflow: 'hidden'
             }}>
-                <table className="data-table" style={{ 
-                    width: '100%', 
+                <table className="data-table" style={{
+                    width: '100%',
                     borderCollapse: 'collapse',
                     backgroundColor: '#1e2533'
                 }}>
                     <thead>
                     <tr style={{ backgroundColor: '#2d3748' }}>
-                        <th style={{ 
+                        <th style={{
                             width: '40px',
                             padding: '0.75rem',
                             borderBottom: '1px solid #4a5568',
                             color: '#e2e8f0',
                             textAlign: 'left'
                         }}></th>
-                        <th style={{ 
+                        <th style={{
                             width: '50px',
                             padding: '0.75rem',
                             borderBottom: '1px solid #4a5568',
@@ -360,10 +372,10 @@ const KlienciPage = () => {
                     <tbody>
                     {paginatedKlienci.length === 0 ? (
                         <tr>
-                            <td colSpan={12} style={{ 
-                                padding: '2rem', 
-                                textAlign: 'center', 
-                                color: '#a0aec0' 
+                            <td colSpan={12} style={{
+                                padding: '2rem',
+                                textAlign: 'center',
+                                color: '#a0aec0'
                             }}>
                                 {searchTerm ? 'Brak klientów dla podanych kryteriów.' : 'Brak klientów.'}
                             </td>
@@ -372,10 +384,10 @@ const KlienciPage = () => {
                         paginatedKlienci.map((klient, index) => {
                             const isSelected = selectedIds.includes(klient.idKlient);
                             const globalIndex = (currentPage - 1) * rowsPerPage + index + 1;
-                            const rowBg = isSelected 
-                                ? '#4a5568' 
-                                : index % 2 === 0 
-                                    ? '#1e2533' 
+                            const rowBg = isSelected
+                                ? '#4a5568'
+                                : index % 2 === 0
+                                    ? '#1e2533'
                                     : '#252d3d';
                             return (
                                 <tr
@@ -416,9 +428,9 @@ const KlienciPage = () => {
             </div>
 
             {/* Paginacja */}
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 marginTop: '1rem',
                 padding: '0.75rem 0',
@@ -453,7 +465,7 @@ const KlienciPage = () => {
                     </select>
                     <span>z {filteredAndSortedKlienci.length} klientów</span>
                 </div>
-                
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <button
                         onClick={() => handlePageChange(1)}
