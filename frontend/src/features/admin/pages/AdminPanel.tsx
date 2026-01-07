@@ -7,6 +7,7 @@ import '@/common/styles/PageStyles.css';
 interface User {
     id: string;
     email: string;
+    userName: string; // Imię i nazwisko
     roles: string[];
 }
 
@@ -25,6 +26,7 @@ const AdminPanel = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        userName: '', // Imię i nazwisko
         role: ''
     });
 
@@ -88,13 +90,13 @@ const AdminPanel = () => {
 
     const handleAddNew = () => {
         setEditingUser(null);
-        setFormData({ email: '', password: '', role: '' });
+        setFormData({ email: '', password: '', userName: '', role: '' });
         setIsFormVisible(true);
     };
 
     const handleEdit = (user: User) => {
         setEditingUser(user);
-        setFormData({ email: user.email, password: '', role: user.roles[0] || '' });
+        setFormData({ email: user.email, password: '', userName: user.userName || '', role: user.roles[0] || '' });
         setIsFormVisible(true);
     };
 
@@ -104,11 +106,17 @@ const AdminPanel = () => {
             if (editingUser) {
                 await apiClient.put(`/api/admin/users/${editingUser.id}`, {
                     email: formData.email,
+                    userName: formData.userName,
                     role: formData.role
                 });
                 showToast('Użytkownik zaktualizowany', 'success');
             } else {
-                await apiClient.post('/api/admin/users', formData);
+                await apiClient.post('/api/admin/users', {
+                    email: formData.email,
+                    password: formData.password,
+                    userName: formData.userName,
+                    role: formData.role
+                });
                 showToast('Użytkownik dodany', 'success');
             }
             setIsFormVisible(false);
@@ -225,6 +233,17 @@ const AdminPanel = () => {
                                 whiteSpace: 'nowrap'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <span>Imię i nazwisko</span>
+                                </div>
+                            </th>
+                            <th style={{ 
+                                padding: '0.75rem',
+                                borderBottom: '1px solid #4a5568',
+                                color: '#e2e8f0',
+                                textAlign: 'left',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                     <span>Email</span>
                                     <input
                                         type="text"
@@ -301,7 +320,7 @@ const AdminPanel = () => {
                     <tbody>
                         {paginatedUsers.length === 0 ? (
                             <tr>
-                                <td colSpan={3} style={{ 
+                                <td colSpan={4} style={{ 
                                     padding: '2rem', 
                                     textAlign: 'center', 
                                     color: '#a0aec0' 
@@ -336,10 +355,13 @@ const AdminPanel = () => {
                                                     fontWeight: 'bold',
                                                     fontSize: '0.9rem'
                                                 }}>
-                                                    {user.email.charAt(0).toUpperCase()}
+                                                    {(user.userName || user.email).charAt(0).toUpperCase()}
                                                 </div>
-                                                <span>{user.email}</span>
+                                                <span>{user.userName || '-'}</span>
                                             </div>
+                                        </td>
+                                        <td style={{ padding: '0.75rem', color: '#e2e8f0' }}>
+                                            {user.email}
                                         </td>
                                         <td style={{ padding: '0.75rem' }}>
                                             {user.roles.length > 0 ? (
@@ -601,6 +623,23 @@ const AdminPanel = () => {
                                     />
                                 </div>
                             )}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#a0aec0' }}>Imię i nazwisko:</label>
+                                <input
+                                    type="text"
+                                    value={formData.userName}
+                                    onChange={e => setFormData({...formData, userName: e.target.value})}
+                                    required
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.75rem',
+                                        background: '#1a202c',
+                                        border: '1px solid #4a5568',
+                                        borderRadius: '4px',
+                                        color: '#edf2f7'
+                                    }}
+                                />
+                            </div>
                             <div style={{ marginBottom: '1rem' }}>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', color: '#a0aec0' }}>Rola:</label>
                                 <select

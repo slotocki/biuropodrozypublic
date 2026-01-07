@@ -1,4 +1,4 @@
-﻿﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -55,7 +55,7 @@ public class AdminController : ControllerBase
     {
         var user = new IdentityUser
         {
-            UserName = dto.Email,
+            UserName = dto.UserName ?? dto.Email, // Użyj UserName jeśli podane, w przeciwnym razie Email
             Email = dto.Email,
             EmailConfirmed = true
         };
@@ -82,7 +82,7 @@ public class AdminController : ControllerBase
         if (user == null) return NotFound(new { message = "Nie znaleziono użytkownika" });
 
         user.Email = dto.Email;
-        user.UserName = dto.Email;
+        user.UserName = dto.UserName ?? dto.Email; // Użyj UserName jeśli podane, w przeciwnym razie Email
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded) return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
@@ -261,8 +261,8 @@ public class AdminController : ControllerBase
     }
 }
 
-public record CreateUserDto(string Email, string Password, string? Role);
-public record UpdateUserDto(string Email, string? Role);
+public record CreateUserDto(string Email, string Password, string? UserName, string? Role);
+public record UpdateUserDto(string Email, string? UserName, string? Role);
 public record ResetPasswordDto(string NewPassword);
 
 public class FirmSettingsDto
@@ -276,4 +276,3 @@ public class FirmSettingsDto
     public string MiejsceWystawienia { get; set; } = "";
     public string EmailKsiegowosci { get; set; } = "";
 }
-

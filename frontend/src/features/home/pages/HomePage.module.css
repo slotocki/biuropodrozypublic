@@ -1,17 +1,18 @@
-﻿﻿.dashboardContainer {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+﻿.dashboardContainer {
+    min-height: calc(100vh - 4rem);
+    background: transparent;
     padding: 2rem;
+    width: 100%;
 }
 
 .heroSection {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
     align-items: center;
     max-width: 1200px;
-    margin: 0 auto 4rem;
-    padding: 3rem;
+    margin: 0 auto 3rem;
+    padding: 2rem;
     background: rgba(45, 55, 72, 0.6);
     border-radius: 16px;
     backdrop-filter: blur(10px);
@@ -23,7 +24,7 @@
 }
 
 .mainTitle {
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: bold;
     margin: 0 0 1rem 0;
     background: linear-gradient(135deg, #4299e1 0%, #667eea 100%);
@@ -33,7 +34,7 @@
 }
 
 .subtitle {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: #cbd5e0;
     line-height: 1.6;
     margin: 0;
@@ -62,7 +63,7 @@
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0 auto 3rem;
 }
 
 .tile {
@@ -76,8 +77,6 @@
     transition: all 0.3s ease;
     cursor: pointer;
     overflow: hidden;
-    margin-left: 0.5rem;
-
 }
 
 .tile::before {
@@ -137,13 +136,18 @@
 
 /* Responsywność */
 @media (max-width: 768px) {
+    .dashboardContainer {
+        padding: 1rem;
+    }
+
     .heroSection {
         grid-template-columns: 1fr;
-        padding: 2rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     .mainTitle {
-        font-size: 2rem;
+        font-size: 1.8rem;
     }
 
     .subtitle {
@@ -153,9 +157,9 @@
     .tileGrid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+        margin-bottom: 2rem;
     }
 }
-
 
 .pageWrapper {
     padding: 2rem;
@@ -182,4 +186,3 @@
         font-size: 1.8rem;
     }
 }
-

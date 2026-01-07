@@ -27,7 +27,11 @@ builder.Services.AddDbContext<IdenQtityDQataContQext>(options =>
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
-builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
+{
+    // Pozwól na spacje i inne znaki w UserName (imię i nazwisko)
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ąćęłńóśźżĄĆĘŁŃÓŚŹŻ";
+})
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<IdenQtityDQataContQext>();
 
