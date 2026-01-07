@@ -159,7 +159,7 @@ public class KlienciController : ControllerBase
         if (klient == null)
             return NotFound(new { message = "Nie znaleziono klienta." });
 
-        // Sprawdź czy klient ma rezerwacje
+        //  czy klient ma rezerwacje
         var maRezerwacje = await _context.UczestnikRezerwacjis
             .AnyAsync(u => u.IdKlient == id);
 

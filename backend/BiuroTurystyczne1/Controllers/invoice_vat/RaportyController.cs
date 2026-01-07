@@ -29,9 +29,9 @@ public class RaportyController : ControllerBase
         return await _firmSettingsService.GetDocumentFirmSettingsAsync();
     }
 
-    /// <summary>
-    /// Pobiera listę dostępnych miesięcy z fakturami
-    /// </summary>
+ 
+    // Pobiera listę dostępnych miesięcy z fakturami
+    
     [HttpGet("dostepne-miesiace")]
     public async Task<IActionResult> GetDostepneMiesiace()
     {
@@ -50,9 +50,9 @@ public class RaportyController : ControllerBase
         }));
     }
 
-    /// <summary>
-    /// Pobiera szczegółowy raport dla wybranego miesiąca
-    /// </summary>
+    
+    // Pobiera szczegółowy raport dla wybranego miesiąca
+  
     [HttpGet("{rok}/{miesiac}")]
     public async Task<IActionResult> GetRaportMiesieczny(int rok, int miesiac)
     {
@@ -158,9 +158,9 @@ public class RaportyController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Generuje PDF raportu miesięcznego
-    /// </summary>
+  
+    // Generuje PDF raportu miesięcznego
+    
     [HttpGet("{rok}/{miesiac}/pdf")]
     public async Task<IActionResult> GetRaportPdf(int rok, int miesiac)
     {
@@ -185,9 +185,9 @@ public class RaportyController : ControllerBase
         return File(pdfBytes, "application/pdf", fileName);
     }
 
-    /// <summary>
-    /// Wysyła raport na email księgowości
-    /// </summary>
+    
+    // Wysyła raport na email księgowości
+   
     [HttpPost("{rok}/{miesiac}/wyslij-do-ksiegowosci")]
     public async Task<IActionResult> WyslijDoKsiegowosci(int rok, int miesiac)
     {

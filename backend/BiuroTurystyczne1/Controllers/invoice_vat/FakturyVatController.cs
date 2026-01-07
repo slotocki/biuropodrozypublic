@@ -114,7 +114,7 @@ public class FakturyVatController : ControllerBase
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // ⭐ Sprawdzenie NULL
+            
             var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(identityUserId))
             {
@@ -201,7 +201,7 @@ public class FakturyVatController : ControllerBase
                 
                 if (fakturaDoPdf != null && !string.IsNullOrEmpty(fakturaDoPdf.IdUser))
                 {
-                    // ⭐ Sprawdzenie NULL
+                    
                     var wystawiajacyUser = await _userManager.FindByIdAsync(fakturaDoPdf.IdUser);
                     var wystawiajacyNazwa = wystawiajacyUser?.UserName ?? "Brak danych";
                     
@@ -312,7 +312,7 @@ public class FakturyVatController : ControllerBase
         return Ok(new
         {
             IdFaktura = faktura.IdFaktura,
-            IdKontrahent = faktura.IdKontrahent, // ⭐ TO JEST POTRZEBNE
+            IdKontrahent = faktura.IdKontrahent, 
             NumerFaktury = faktura.NumerFaktury,
             DataWystawienia = faktura.DataWystawienia,
             KwotaBrutto = faktura.KwotaBrutto
@@ -403,7 +403,7 @@ public class FakturyVatController : ControllerBase
             var numerBazowy = staraFaktura.NumerFaktury.Split('_')[0];
             var nowyNumerFaktury = $"{numerBazowy}_{nowaWersja}";
             
-            // ⭐ Sprawdzenie NULL
+            
             var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(identityUserId))
             {
@@ -462,7 +462,7 @@ public class FakturyVatController : ControllerBase
                 
                 if (fakturaDoPdf != null && !string.IsNullOrEmpty(fakturaDoPdf.IdUser))
                 {
-                    // ⭐ Sprawdzenie NULL
+                    
                     var wystawiajacyUser = await _userManager.FindByIdAsync(fakturaDoPdf.IdUser);
                     var wystawiajacyNazwa = wystawiajacyUser?.UserName ?? "Brak danych";
                     
@@ -564,7 +564,7 @@ public class FakturyVatController : ControllerBase
             return NotFound("Nie znaleziono faktury.");
         }
         
-        // ⭐ Sprawdzenie NULL
+       
         var wystawiajacyNazwa = "Brak danych";
         if (!string.IsNullOrEmpty(fakturaFull.IdUser))
         {
@@ -836,9 +836,9 @@ public class FakturyVatController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Pobiera PDF korekty
-    /// </summary>
+
+    // Pobiera PDF korekty
+  
     [HttpGet("{id}/pdf-korekta")]
     public async Task<IActionResult> GetKorektaPdf(uint id)
     {

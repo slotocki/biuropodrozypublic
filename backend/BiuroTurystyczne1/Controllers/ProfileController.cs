@@ -30,7 +30,7 @@ public class ProfileController : ControllerBase
         return Ok(new 
         { 
             email = user.Email,
-            userName = user.UserName // ⭐ DODANE
+            userName = user.UserName 
         });
     }
 }

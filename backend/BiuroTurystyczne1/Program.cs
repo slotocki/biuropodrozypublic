@@ -151,20 +151,5 @@ app.MapPost("/register", () => Results.Json(
 )).AllowAnonymous();
 
 app.MapControllers();
-// ✅ TYMCZASOWY endpoint do resetu hasła (usuń po użyciu!)
-//app.MapPost("/admin/reset-password", async (UserManager<IdentityUser> userManager) =>
-//{
-  //  var admin = await userManager.FindByEmailAsync("admin@biuro.pl");
- //   if (admin == null)
-  //      return Results.NotFound("Admin nie znaleziony");
-
- //   var token = await userManager.GeneratePasswordResetTokenAsync(admin);
- //   var result = await userManager.ResetPasswordAsync(admin, token, "Admin123!");
-
- //   if (result.Succeeded)
-  //      return Results.Ok("Hasło zresetowane pomyślnie");
-
-   // return Results.BadRequest(result.Errors);
-//}).AllowAnonymous();
 
 app.Run();

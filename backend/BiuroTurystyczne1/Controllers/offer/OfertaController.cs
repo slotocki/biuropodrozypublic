@@ -20,10 +20,9 @@ public class OfertaController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// GET: api/Oferta
-    /// Pobiera listę ofert z możliwością wyszukiwania i filtrowania
-    /// </summary>
+ 
+    // Pobiera listę ofert z możliwością wyszukiwania i filtrowania
+   
     [HttpGet]
     public async Task<IActionResult> GetOferty([FromQuery] OfertaSearchDto searchParams)
     {
@@ -39,10 +38,9 @@ public class OfertaController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// GET: api/Oferta/{id}
-    /// Pobiera szczegóły pojedynczej oferty
-    /// </summary>
+    
+    // GET: api/Oferta/{id}
+  
     [HttpGet("{id}")]
     public async Task<IActionResult> GetOferta(uint id)
     {
@@ -62,10 +60,10 @@ public class OfertaController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// POST: api/Oferta
-    /// Tworzy nową ofertę
-    /// </summary>
+  
+    // POST: api/Oferta
+    // Tworzy nową ofertę
+   
     [HttpPost]
     public async Task<IActionResult> CreateOferta([FromBody] OfertaCreateDto dto)
     {
@@ -84,10 +82,10 @@ public class OfertaController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// PUT: api/Oferta/{id}
-    /// Aktualizuje istniejącą ofertę
-    /// </summary>
+    
+    // PUT: api/Oferta/{id}
+    // Aktualizuje istniejącą ofertę
+
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateOferta(uint id, [FromBody] OfertaUpdateDto dto)
     {
@@ -113,10 +111,9 @@ public class OfertaController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// DELETE: api/Oferta/{id}
-    /// Archiwizuje ofertę (soft delete)
-    /// </summary>
+    // DELETE: api/Oferta/{id}
+    // Archiwizuje ofertę (soft delete)
+    
     [HttpDelete("{id}")]
     public async Task<IActionResult> ArchiveOferta(uint id)
     {
@@ -136,10 +133,10 @@ public class OfertaController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// PATCH: api/Oferta/{id}/restore
-    /// Przywraca zarchiwizowaną ofertę
-    /// </summary>
+  
+    // PATCH: api/Oferta/{id}/restore
+    // Przywraca zarchiwizowaną ofertę
+    
     [HttpPatch("{id}/restore")]
     public async Task<IActionResult> RestoreOferta(uint id)
     {

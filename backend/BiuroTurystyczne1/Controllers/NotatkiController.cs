@@ -37,7 +37,7 @@ public class NotatkiController : ControllerBase
                 .OrderByDescending(n => n.DataPojawienia)
                 .ToListAsync();
 
-            // ⭐ Pobierz autorów z AspNetUsers
+       
             var notatkiDto = new List<object>();
             foreach (var n in notatki)
             {
@@ -80,7 +80,7 @@ public class NotatkiController : ControllerBase
             return NotFound(new { message = "Nie znaleziono notatki." });
         }
 
-        // ⭐ Pobierz autora z AspNetUsers
+      
         var autor = "Nieznany";
         if (!string.IsNullOrEmpty(notatka.IdUzytkownik))
         {
@@ -110,7 +110,7 @@ public class NotatkiController : ControllerBase
 
         try
         {
-            // ⭐ Pobierz ID zalogowanego użytkownika z AspNetUsers
+            
             var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(identityUserId))
             {
@@ -127,7 +127,7 @@ public class NotatkiController : ControllerBase
             {
                 Tytul = notatkaDto.Tytul,
                 Tresc = notatkaDto.Tresc,
-                IdUzytkownik = identityUserId, // ⭐ Bezpośrednio string GUID
+                IdUzytkownik = identityUserId, 
                 DataPojawienia = notatkaDto.DataPojawienia ?? DateTime.Now,
                 DataZnikniecia = notatkaDto.DataZnikniecia
             };

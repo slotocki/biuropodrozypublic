@@ -15,18 +15,18 @@ public class EmailController : ControllerBase
 {
     private readonly BiuroDbContext _context;
     private readonly IEmailService _emailService;
-    private readonly IPdfService _pdfService; // ✅ DODANE
+    private readonly IPdfService _pdfService; 
     private readonly string _fakturyFolderPath;
 
     public EmailController(
         BiuroDbContext context, 
         IEmailService emailService, 
-        IPdfService pdfService, // ✅ DODANE
+        IPdfService pdfService, 
         IWebHostEnvironment env)
     {
         _context = context;
         _emailService = emailService;
-        _pdfService = pdfService; // ✅ DODANE
+        _pdfService = pdfService; 
         _fakturyFolderPath = Path.Combine(env.ContentRootPath, "Faktury");
     }
 
@@ -50,9 +50,9 @@ public async Task<IActionResult> SendFaktury([FromBody] SendFakturyEmailDto requ
         
         foreach (var faktura in faktury)
         {
-            // ⭐ ZMIANA: Użyj ścieżki z bazy danych
+            
             string filePath;
-            string fileName = $"faktura-{faktura.NumerFaktury.Replace('/', '_')}.pdf"; // ⭐ DEKLARACJA NA POCZĄTKU
+            string fileName = $"faktura-{faktura.NumerFaktury.Replace('/', '_')}.pdf"; 
             
             if (!string.IsNullOrEmpty(faktura.SciezkaPdf))
             {
@@ -77,7 +77,7 @@ public async Task<IActionResult> SendFaktury([FromBody] SendFakturyEmailDto requ
             // Wyciągnij tylko pierwszą stronę (oryginał)
             var originalOnlyBytes = _pdfService.ExtractFirstPage(fullPdfBytes);
             
-            // ⭐ USUNIĘTO: var fileName = ... (już zadeklarowane wyżej)
+            
             
             attachments.Add(new EmailAttachment
             {

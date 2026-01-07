@@ -98,7 +98,7 @@ namespace BiuroTurystyczne1.Services
                     return result;
                 }
 
-                // ✅ POPRAWKA: Użyj JsonDocument zamiast deserializacji do modelu
+             
                 using var document = JsonDocument.Parse(content);
                 var root = document.RootElement;
 

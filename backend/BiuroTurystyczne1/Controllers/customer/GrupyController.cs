@@ -129,7 +129,7 @@ public class GrupyController : ControllerBase
         if (grupa == null)
             return NotFound(new { message = "Nie znaleziono grupy." });
 
-        // Sprawdź czy grupa ma rezerwacje
+        //czy grupa ma rezerwacje
         if (grupa.Rezerwacjas.Any())
         {
             return BadRequest(new
@@ -140,7 +140,7 @@ public class GrupyController : ControllerBase
             });
         }
 
-        // Odłącz klientów od grupy (ustaw IdGrupa na NULL)
+        // Odłącz klientów od grupy 
         foreach (var klient in grupa.Klients)
         {
             klient.IdGrupa = null;

@@ -66,7 +66,7 @@ public class ZdjeciaController : ControllerBase
                 z.SciezkaPliku,
                 z.OpisZdjecia,
                 z.Tagi,
-                z.CzyGlowne,  // ✅ Już jest bool
+                z.CzyGlowne, 
                 NazwaOsrodka = z.IdOsrodekNavigation != null ? z.IdOsrodekNavigation.NazwaOsrodka : null,
                 NazwaDestynacji = z.IdDestynacjaNavigation != null ? z.IdDestynacjaNavigation.Nazwa : null
             })
@@ -91,7 +91,7 @@ public class ZdjeciaController : ControllerBase
                 z.SciezkaPliku,
                 z.OpisZdjecia,
                 z.Tagi,
-                z.CzyGlowne,  // ✅ Już jest bool
+                z.CzyGlowne, 
                 NazwaOsrodka = z.IdOsrodekNavigation != null ? z.IdOsrodekNavigation.NazwaOsrodka : null,
                 NazwaDestynacji = z.IdDestynacjaNavigation != null ? z.IdDestynacjaNavigation.Nazwa : null
             })
@@ -149,7 +149,7 @@ public class ZdjeciaController : ControllerBase
                 SciezkaPliku = $"/uploads/photos/{uniqueFileName}",
                 OpisZdjecia = opisZdjecia,
                 Tagi = dto.Tagi,
-                CzyGlowne = i == 0 && dto.CzyGlowne  // ✅ bool = bool
+                CzyGlowne = i == 0 && dto.CzyGlowne  
             };
 
             _context.Zdjecia.Add(zdjecie);
@@ -227,7 +227,7 @@ public class ZdjeciaController : ControllerBase
         zdjecie.IdDestynacja = dto.IdDestynacja;
         zdjecie.OpisZdjecia = dto.OpisZdjecia;
         zdjecie.Tagi = dto.Tagi;
-        zdjecie.CzyGlowne = dto.CzyGlowne;  // ✅ bool = bool
+        zdjecie.CzyGlowne = dto.CzyGlowne;  
 
         await _context.SaveChangesAsync();
         return Ok(new { message = "Zdjęcie zaktualizowane." });

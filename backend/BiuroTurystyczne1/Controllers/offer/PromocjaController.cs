@@ -67,13 +67,13 @@ public class PromocjaController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreatePromocja([FromBody] PromocjaDto dto)
     {
-        // ✅ Walidacja - musi być kwota LUB procent
+        
         if (!dto.KwotaZnizki.HasValue && !dto.ProcentZnizki.HasValue)
         {
             return BadRequest(new { message = "Musisz podać kwotę lub procent zniżki." });
         }
 
-        // ✅ Walidacja dat
+        
         if (dto.DataOd >= dto.DataDo)
         {
             return BadRequest(new { message = "Data zakończenia musi być późniejsza niż data rozpoczęcia." });
@@ -102,7 +102,7 @@ public class PromocjaController : ControllerBase
         var promocja = await _context.Promocjas.FindAsync(id);
         if (promocja == null) return NotFound();
 
-        // ✅ Walidacja
+      
         if (!dto.KwotaZnizki.HasValue && !dto.ProcentZnizki.HasValue)
         {
             return BadRequest(new { message = "Musisz podać kwotę lub procent zniżki." });

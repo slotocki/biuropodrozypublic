@@ -86,7 +86,7 @@ public class KontrahenciController : ControllerBase
                 
                 var firma = firmaArray[0];
                 
-                // ✅ Wyciągnij dane właściciela
+                
                 string nipWlasciciela = "";
                 string regon = "";
                 if (firma.TryGetProperty("wlasciciel", out var wlasciciel))
@@ -95,7 +95,7 @@ public class KontrahenciController : ControllerBase
                     regon = wlasciciel.TryGetProperty("regon", out var regonProp) ? regonProp.GetString() ?? "" : "";
                 }
                 
-                // ✅ Wyciągnij adres działalności
+                
                 string ulica = "";
                 string budynek = "";
                 string lokal = "";
@@ -130,8 +130,8 @@ public class KontrahenciController : ControllerBase
                     miejscowosc = miasto,
                     ulica = ulicaPelna.Trim(),
                     kodPocztowy = kod,
-                    email = "", // CEIDG v3 nie zwraca emaila w tym endpoincie
-                    telefon = "", // CEIDG v3 nie zwraca telefonu w tym endpoincie
+                    email = "", 
+                    telefon = "", 
                     status = firma.TryGetProperty("status", out var statusProp) ? statusProp.GetString() : ""
                 };
                 
@@ -215,7 +215,7 @@ public class KontrahenciController : ControllerBase
             return NotFound(new { message = "Nie znaleziono kontrahenta." });
         }
     
-        // ✅ SPRAWDŹ czy kontrahent ma faktury
+      
         var maFaktury = await _context.FakturaVats
             .AnyAsync(f => f.IdKontrahent == id);
     

@@ -99,7 +99,7 @@ public class AdminController : ControllerBase
         return Ok(new { message = "Użytkownik zaktualizowany" });
     }
 
-    // ✅ Nowy endpoint - resetowanie hasła
+ 
     [HttpPost("users/{id}/reset-password")]
     public async Task<IActionResult> ResetPassword(string id, [FromBody] ResetPasswordDto dto)
     {
@@ -136,9 +136,9 @@ public class AdminController : ControllerBase
         return Ok(roles);
     }
 
-    /// <summary>
-    /// Pobiera ustawienia firmy bezpośrednio z pliku konfiguracyjnego
-    /// </summary>
+   
+    // Pobiera ustawienia firmy bezpośrednio z pliku konfiguracyjnego
+   
     [HttpGet("firm-settings")]
     public async Task<IActionResult> GetFirmSettings()
     {
@@ -199,9 +199,9 @@ public class AdminController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Zapisuje ustawienia firmy do pliku JSON i zwraca zapisane dane
-    /// </summary>
+  
+    // Zapisuje ustawienia firmy do pliku JSON i zwraca zapisane dane
+   
     [HttpPut("firm-settings")]
     public async Task<IActionResult> UpdateFirmSettings([FromBody] FirmSettingsDto settings)
     {

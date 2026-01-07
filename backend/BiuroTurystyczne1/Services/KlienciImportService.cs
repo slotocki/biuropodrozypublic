@@ -99,7 +99,7 @@ public class KlienciImportService : IKlienciImportService
                     Ulica = clientData.Ulica?.Trim() ?? "",
                     KodPocztowy = clientData.KodPocztowy?.Trim() ?? "",
                     Miejscowosc = clientData.Miejscowosc?.Trim() ?? "",
-                    Email = string.IsNullOrWhiteSpace(clientData.Email) ? null : clientData.Email?.Trim(), // ✅ NULL zamiast ""
+                    Email = string.IsNullOrWhiteSpace(clientData.Email) ? null : clientData.Email?.Trim(), 
                     Telefon = clientData.Telefon?.Trim() ?? "",
                     IdObywatelstwo = clientData.IdObywatelstwo.HasValue ? (uint)clientData.IdObywatelstwo : (uint?)null,
                     DataUrodzenia = clientData.DataUrodzenia.HasValue 

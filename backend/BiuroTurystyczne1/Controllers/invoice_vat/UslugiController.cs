@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BiuroTurystyczne1.Controllers.invoice_vat;
 
 [ApiController]
-[Route("api/[controller]")] // To tworzy adres /api/uslugi
+[Route("api/[controller]")] 
 [Authorize]
 public class UslugiController : ControllerBase
 {
